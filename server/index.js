@@ -5,12 +5,15 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { conectar, query, tipoBanco } from './db.js';
-import { criarDemonstracao, versaoDosDados } from './dados-demo.js';
+import { criarDemonstracao, gerarDia, versaoDosDados } from './dados-demo.js';
 import { hojeEmFlorianopolis, limparCache } from './relogio.js';
-import { renderizar, paginaPraia } from './paginas.js';
+import { renderizar, paginaPraia, PAINEL, INICIO_DO_PERFIL } from './paginas.js';
 import rotasPublicas from './rotas/publico.js';
 import rotasAuth, { usuarioDaSessao } from './rotas/auth.js';
 import rotasAdmin, { ajusteLigado } from './rotas/admin.js';
+import rotasPainel from './rotas/painel.js';
+import rotasGV from './rotas/gv.js';
+import { ErroHttp } from './regras/validacao.js';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORTA = Number(process.env.PORT) || 3000;
@@ -53,10 +56,14 @@ async function garantirDemonstracao() {
       c = Object.fromEntries(linhas.map((l) => [l.chave, l.valor]));
     } catch { /* banco vazio */ }
     const hoje = hojeEmFlorianopolis();
-    if (c.demo_data !== hoje || c.demo_versao !== versaoDosDados()) {
-      const motivo = !c.demo_data ? 'banco vazio' : c.demo_data !== hoje ? `novo dia (${hoje})` : 'nova versão dos dados';
-      console.log(`Criando a demonstração (${motivo})...`);
+    if (!c.demo_data || c.demo_versao !== versaoDosDados()) {
+      // Banco vazio ou nova versão do sistema: monta tudo do zero.
+      console.log(`Criando a demonstração (${c.demo_data ? 'nova versão dos dados' : 'banco vazio'})...`);
       await criarDemonstracao();
+    } else if (c.demo_data !== hoje) {
+      // Novo dia: mantém cadastros e histórico e gera o dia de hoje.
+      console.log(`Virada do dia (${hoje}): gerando escalas e cenário do dia...`);
+      await gerarDia(hoje);
     }
     limparCache();
     verificadoEm = Date.now();
@@ -80,6 +87,8 @@ app.use('/vendor/fontes/barlow-condensed', express.static(path.join(raiz, 'node_
 app.use('/api/publico', rotasPublicas);
 app.use('/api/auth', rotasAuth);
 app.use('/api/admin', rotasAdmin);
+app.use('/api/painel', rotasPainel);
+app.use('/api/gv', rotasGV);
 app.get('/api/status', (req, res) => res.json({ ok: true, banco: tipoBanco() }));
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada.' }));
 
@@ -97,20 +106,30 @@ app.get('/entrar', async (req, res) => {
   if (await usuarioDaSessao(req)) return res.redirect('/painel');
   res.send(renderizar('entrar'));
 });
+// Área da equipe: cada perfil vai para o seu painel. A permissão de cada página é conferida aqui no servidor.
 app.get('/painel', async (req, res) => {
-  if (!(await usuarioDaSessao(req))) return res.redirect('/entrar');
-  res.send(renderizar('painel'));
-});
-app.get('/painel/posicoes', async (req, res) => {
   const u = await usuarioDaSessao(req);
   if (!u) return res.redirect('/entrar');
-  if (u.perfil !== 'admin') return res.status(403).send(renderizar('404'));
-  res.send(renderizar('posicoes'));
+  res.redirect(INICIO_DO_PERFIL[u.perfil]);
+});
+app.get('/painel/:pagina', async (req, res, next) => {
+  const cfg = PAINEL[req.params.pagina];
+  if (!cfg) return next();
+  const u = await usuarioDaSessao(req);
+  if (!u) return res.redirect('/entrar');
+  if (!cfg.perfis.includes(u.perfil)) return res.status(403).send(renderizar('403'));
+  res.send(cfg.pagina ? renderizar(cfg.pagina) : renderizar('painel-base', {
+    titulo: cfg.titulo, descricao: 'Área da equipe do SIGPO-GV.', menu: 'entrar', restrita: true, estilos: cfg.mapa ? ['/vendor/leaflet/leaflet.css'] : [],
+    scripts: [...(cfg.mapa ? ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js'] : []), '/assets/js/painel/base.js', `/assets/js/painel/${cfg.js}.js`],
+    variaveis: { titulo_pagina: cfg.titulo },
+  }));
 });
 app.use((req, res) => res.status(404).send(renderizar('404')));
 
 // Erros inesperados: registra no console e responde sem expor detalhes internos.
 app.use((err, req, res, next) => {
+  if (err instanceof ErroHttp) return res.status(err.status).json({ erro: err.message });
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ erro: 'Dados enviados em formato inválido.' });
   console.error(err);
   if (req.path.startsWith('/api')) return res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
   res.status(500).send('Erro interno. Tente novamente.');

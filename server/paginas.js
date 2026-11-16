@@ -16,10 +16,33 @@ const PAGINAS = {
   seguranca: { titulo: 'Segurança na praia', descricao: 'Bandeiras, correntes de retorno e o que fazer em uma emergência.', menu: 'seguranca' },
   sobre: { titulo: 'Sobre o projeto', descricao: 'O que é o SIGPO-GV Web, como funciona e por que os dados são fictícios.', menu: 'sobre' },
   entrar: { titulo: 'Entrar', descricao: 'Acesso da equipe (contas de demonstração).', menu: 'entrar', scripts: ['/assets/js/entrar.js'] },
-  painel: { titulo: 'Área restrita', descricao: 'Área da equipe.', menu: 'entrar', scripts: ['/assets/js/painel.js'], restrita: true },
+  403: { titulo: 'Acesso não permitido', descricao: 'Seu perfil não tem acesso a esta página.', menu: 'entrar', restrita: true },
   posicoes: { titulo: 'Conferir posição dos postos', descricao: 'Ajuste da posição dos postos no mapa.', menu: 'entrar', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/posicoes.js'], estilos: ['/vendor/leaflet/leaflet.css'], restrita: true },
   404: { titulo: 'Página não encontrada', descricao: 'Esta página não existe.', menu: '' },
 };
+
+// Páginas da área da equipe: quem pode abrir cada uma. O servidor confere antes de entregar a página,
+// e cada API confere de novo (esconder um botão não basta).
+const ADM = ['admin']; const OPERACAO = ['admin', 'supervisor']; const GV = ['guarda_vidas'];
+export const PAINEL = {
+  admin: { titulo: 'Visão geral', perfis: ADM, js: 'visao', mapa: true },
+  supervisao: { titulo: 'Minha região', perfis: ['supervisor'], js: 'visao', mapa: true },
+  postos: { titulo: 'Postos', perfis: ADM, js: 'postos' },
+  'guarda-vidas': { titulo: 'Guarda-vidas', perfis: ADM, js: 'guarda-vidas' },
+  pulseiras: { titulo: 'Pulseiras NFC', perfis: ADM, js: 'pulseiras' },
+  escalas: { titulo: 'Escalas', perfis: OPERACAO, js: 'escalas' },
+  registros: { titulo: 'Registros', perfis: OPERACAO, js: 'registros' },
+  alertas: { titulo: 'Alertas', perfis: OPERACAO, js: 'alertas' },
+  revisoes: { titulo: 'Pedidos de revisão', perfis: OPERACAO, js: 'revisoes' },
+  terminal: { titulo: 'Terminal simulado', perfis: OPERACAO, js: 'terminal' },
+  auditoria: { titulo: 'Auditoria', perfis: ADM, js: 'auditoria' },
+  posicoes: { perfis: ADM, pagina: 'posicoes' },
+  meu: { titulo: 'Início', perfis: GV, js: 'gv-inicio' },
+  'minha-escala': { titulo: 'Minha escala', perfis: GV, js: 'gv-escala' },
+  'meus-registros': { titulo: 'Meus registros', perfis: GV, js: 'gv-registros' },
+  'minhas-revisoes': { titulo: 'Revisões', perfis: GV, js: 'gv-revisoes' },
+};
+export const INICIO_DO_PERFIL = { admin: '/painel/admin', supervisor: '/painel/supervisao', guarda_vidas: '/painel/meu' };
 
 const cache = new Map();
 function ler(arquivo) {

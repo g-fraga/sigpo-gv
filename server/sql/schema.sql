@@ -1,7 +1,7 @@
 -- SIGPO-GV Web: estrutura do banco de dados (PostgreSQL).
 -- Cada tabela corresponde ao modelo do documento de requisitos (seção 4.3).
 
-DROP TABLE IF EXISTS auditoria, pedidos_revisao, movimentacoes, alertas, registros, escala_itens, escalas,
+DROP TABLE IF EXISTS alerta_tratativas, auditoria, pedidos_revisao, movimentacoes, alertas, registros, escala_itens, escalas,
   usuarios, pulseiras, guarda_vidas, terminais, postos, praias, regioes, config CASCADE;
 
 -- Configurações gerais, como o relógio da demonstração.
@@ -57,7 +57,8 @@ CREATE TABLE guarda_vidas (
   codigo TEXT NOT NULL UNIQUE,         -- ex.: GV 0417
   nome TEXT NOT NULL,
   vinculo TEXT NOT NULL CHECK (vinculo IN ('GVCV', 'Militar')),
-  situacao TEXT NOT NULL DEFAULT 'ativo' CHECK (situacao IN ('ativo', 'afastado', 'desligado'))
+  situacao TEXT NOT NULL DEFAULT 'ativo' CHECK (situacao IN ('ativo', 'afastado', 'desligado')),
+  posto_id INT REFERENCES postos(id)   -- posto base (lotação); a escala de cada dia parte daqui
 );
 
 CREATE TABLE pulseiras (
@@ -69,6 +70,8 @@ CREATE TABLE pulseiras (
   emitida_em DATE NOT NULL,
   motivo TEXT
 );
+-- Cada pessoa só pode ter UMA credencial ativa (pulseira ou cartão reserva).
+CREATE UNIQUE INDEX pulseira_ativa_unica ON pulseiras (guarda_vidas_id) WHERE situacao = 'ativa';
 
 CREATE TABLE usuarios (
   id SERIAL PRIMARY KEY,
@@ -112,7 +115,8 @@ CREATE TABLE registros (
   terminal_id INT REFERENCES terminais(id),
   posto_id INT NOT NULL REFERENCES postos(id),
   hora_leitura TIMESTAMP NOT NULL,     -- relógio do terminal
-  hora_recebida TIMESTAMP NOT NULL,    -- relógio do servidor
+  hora_recebida TIMESTAMP,             -- relógio do servidor (vazio enquanto está guardado no terminal sem sinal)
+  sincronizado BOOLEAN NOT NULL DEFAULT TRUE,
   origem TEXT NOT NULL CHECK (origem IN ('nfc', 'manual', 'correcao')),
   situacao TEXT NOT NULL DEFAULT 'valido' CHECK (situacao IN ('valido', 'repique', 'negado', 'corrigido')),
   observacoes TEXT,
@@ -139,6 +143,17 @@ CREATE TABLE alertas (
   nota TEXT
 );
 
+-- Histórico das providências tomadas em cada alerta.
+CREATE TABLE alerta_tratativas (
+  id SERIAL PRIMARY KEY,
+  alerta_id INT NOT NULL REFERENCES alertas(id),
+  usuario_id INT REFERENCES usuarios(id),
+  usuario_nome TEXT NOT NULL,
+  situacao TEXT NOT NULL,
+  nota TEXT NOT NULL,
+  criado_em TIMESTAMP NOT NULL
+);
+
 CREATE TABLE movimentacoes (
   id SERIAL PRIMARY KEY,
   data DATE NOT NULL,
@@ -155,14 +170,21 @@ CREATE TABLE movimentacoes (
   chegada_em TIMESTAMP
 );
 
+-- O guarda-vidas não altera registros: ele pede revisão e a supervisão analisa.
 CREATE TABLE pedidos_revisao (
   id SERIAL PRIMARY KEY,
-  registro_id INT NOT NULL REFERENCES registros(id),
+  registro_id INT REFERENCES registros(id),          -- vazio quando o pedido é de registro ausente
   guarda_vidas_id INT NOT NULL REFERENCES guarda_vidas(id),
-  texto TEXT NOT NULL,
-  situacao TEXT NOT NULL DEFAULT 'aberto' CHECK (situacao IN ('aberto', 'respondido')),
+  posto_id INT NOT NULL REFERENCES postos(id),       -- define qual supervisão analisa
+  motivo TEXT NOT NULL CHECK (motivo IN ('horario', 'tipo', 'posto', 'nao_reconhece', 'ausente', 'outro')),
+  texto TEXT NOT NULL,                               -- justificativa do guarda-vidas
+  data_referencia DATE NOT NULL,
+  hora_informada TIME,                               -- horário que o guarda-vidas diz ser o correto
+  situacao TEXT NOT NULL DEFAULT 'aberto' CHECK (situacao IN ('aberto', 'aceito', 'recusado')),
   resposta TEXT,
   respondido_por INT REFERENCES usuarios(id),
+  respondido_em TIMESTAMP,
+  correcao_id INT REFERENCES registros(id),          -- registro criado ao aceitar
   criado_em TIMESTAMP NOT NULL
 );
 

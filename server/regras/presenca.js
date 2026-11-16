@@ -41,7 +41,7 @@ export async function situacaoDosPostos({ regiao = null } = {}) {
     SELECT r.guarda_vidas_id, r.posto_id, r.tipo, r.transito, r.origem,
            to_char(r.hora_leitura, 'HH24:MI') AS hora
     FROM registros r
-    WHERE r.situacao = 'valido' AND r.hora_leitura >= $1::date AND r.hora_leitura <= $2::timestamp
+    WHERE r.situacao = 'valido' AND r.sincronizado AND r.hora_leitura >= $1::date AND r.hora_leitura <= $2::timestamp
     ORDER BY r.hora_leitura, r.id`, [data, limite]);
 
   const ultimo = new Map(); // guarda-vidas → último registro

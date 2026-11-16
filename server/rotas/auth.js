@@ -71,7 +71,8 @@ rotas.post('/sair', (req, res) => {
 rotas.get('/eu', async (req, res) => {
   const u = await usuarioDaSessao(req);
   if (!u) return res.status(401).json({ erro: 'Não autenticado.' });
-  res.json(u);
+  const { data, hhmm } = await agora();
+  res.json({ ...u, relogio: { data, hhmm } });
 });
 
 export default rotas;

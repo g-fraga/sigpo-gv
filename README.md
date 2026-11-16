@@ -12,7 +12,28 @@ Portal das praias de Florianópolis com os postos de guarda-vidas e o efetivo em
 - **Conferir posição dos postos** (`/painel/posicoes`, conta admin): arraste o marcador até a guarita ou cole a coordenada do Google Maps.
 - **Segurança**: orientações com fontes citadas.
 - **Sobre**: o projeto, como funciona, dados e privacidade.
-- **Área da equipe**: login com as contas de demonstração (as telas internas vêm nas próximas etapas).
+- **Área da equipe**: três painéis com permissões próprias (veja abaixo).
+
+## Área da equipe: três painéis
+
+Depois do login, cada perfil vai direto para o seu painel. O servidor confere o perfil em **todas** as páginas e rotas da API: esconder um botão não basta, e tentar abrir uma página ou um dado de outro perfil ou de outra região devolve "acesso não permitido".
+
+| Perfil | Vê | Pode fazer |
+|---|---|---|
+| **Administração** (`admin@sigpo.demo`) | Todas as regiões | Visão geral com filtros e mapa; cadastrar, editar e desativar postos (o histórico fica); cadastrar guarda-vidas e definir o posto base; vincular, bloquear, substituir e desativar pulseiras (uma ativa por pessoa, sem código repetido); criar e alterar escalas (cada alteração é uma nova versão com justificativa), ver conflitos e quem está sem alocação; registros, alertas, revisões, terminal simulado; auditoria e "Recriar demonstração" |
+| **Supervisão** (`supervisor@sigpo.demo`, região Leste) | Só a própria região | Visão da região; consultar escalas; registros de entrada e saída com ausências e inconsistências; registro manual com justificativa; corrigir registro (o original fica no histórico); tratar alertas com histórico das providências; responder pedidos de revisão; terminal simulado |
+| **Guarda-vidas** (`gv0417@sigpo.demo`) | Só os próprios dados | Início com posto, escala e situação de hoje; minha escala (próximos dias, últimos 14 dias e alterações); meus registros (incluindo os que aguardam sincronização); pedir revisão e acompanhar a resposta |
+
+Regras que valem para todos:
+- Nada é apagado: correções e respostas criam registros novos e o original fica marcado.
+- Toda alteração relevante vai para a auditoria com o nome de quem fez.
+- Uma ausência de registro aparece como pendência para verificar, nunca como falta automática.
+- O **terminal simulado** faz o papel do leitor NFC: identifica a pulseira, ignora leitura repetida em menos de 1 minuto, recusa pulseira bloqueada e, sem sinal, guarda a leitura no aparelho até a conexão voltar.
+- Novas regiões e novos supervisores cabem na estrutura (tabelas `regioes` e `usuarios.regiao_id`), sem mudar o código.
+
+### Dias da demonstração
+
+A demonstração começa com 6 dias de histórico. A cada novo dia, o sistema **mantém cadastros e histórico** e gera o dia de hoje: escalas a partir do posto base, o cenário das 10:30 e as escalas dos próximos 3 dias. O banco só é refeito do zero quando uma nova versão do sistema é publicada ou quando a administração usa "Recriar demonstração" (Auditoria).
 
 ## Como rodar no seu computador (Ubuntu)
 
@@ -99,13 +120,17 @@ server/
   regras/presenca.js  calcula quem está em cada posto a partir da escala e das leituras
   rotas/publico.js  API pública (só números, sem dados pessoais)
   rotas/auth.js     login, logout e controle de perfil
-  rotas/admin.js    administração (conferir posição dos postos)
+  rotas/admin.js    administração: postos, guarda-vidas, pulseiras, escalas, auditoria
+  rotas/painel.js   operação (admin e supervisão): visão, registros, alertas, revisões, terminal
+  rotas/gv.js       área do guarda-vidas (só os próprios dados)
+  regras/validacao.js  validações e escopo de região
 views/
   molde.html        cabeçalho, menu e rodapé comuns
   paginas/          conteúdo de cada página
 public/
   css/site.css      estilos
-  js/               scripts de cada página
+  js/               scripts das páginas públicas
+  js/painel/        scripts dos painéis (base.js monta o menu de cada perfil)
   img/              ícone
 ```
 
