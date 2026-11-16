@@ -323,7 +323,7 @@ rotas.put('/escalas', async (req, res) => {
     await query("INSERT INTO alertas (chave, tipo, posto_id, titulo, detalhe, criado_em) VALUES ($1,'escala',$2,'Escala alterada',$3,$4) ON CONFLICT (chave) DO NOTHING",
       [`esc:${postoId}:${dia}:${v + 1}`, postoId, `Versão ${v + 1}: ${justificativa}`, ts]);
   }
-  await auditar(u, v > 0 ? 'Alterou escala' : 'Criou escala', `${posto.praia}, ${posto.nome} em ${dia}`, `Versão ${v + 1}, ${itens.length} pessoa(s). ${justificativa}`);
+  await auditar(u, v > 0 ? 'Alterou escala' : 'Criou escala', `${posto.praia}, ${posto.nome} em ${dia}`, `Versão ${v + 1}, ${itens.length} ${itens.length === 1 ? 'pessoa' : 'pessoas'}. ${justificativa}`);
   res.json({ ok: true, versao: v + 1, mensagem: v > 0 ? `Escala salva como versão ${v + 1}. A versão anterior ficou no histórico.` : 'Escala criada.' });
 });
 
@@ -333,8 +333,8 @@ rotas.post('/escalas/gerar', async (req, res) => {
   if (dia < hoje) falha(400, 'Não é possível gerar escala para dias anteriores.');
   if (dia > somaDias(hoje, 60)) falha(400, 'Escolha uma data nos próximos 60 dias.');
   const n = await escalasDaLotacao(dia, ts, req.usuario.id, 'Gerada a partir do posto base');
-  await auditar(req.usuario, 'Gerou escalas', dia, `${n} posto(s) a partir do posto base`);
-  res.json({ ok: true, mensagem: n ? `${n} escala(s) gerada(s) a partir do posto base.` : 'Todos os postos ativos já têm escala neste dia.' });
+  await auditar(req.usuario, 'Gerou escalas', dia, `${n} ${n === 1 ? 'posto' : 'postos'} a partir do posto base`);
+  res.json({ ok: true, mensagem: n ? (n === 1 ? '1 escala gerada' : `${n} escalas geradas`) + ' a partir do posto base.' : 'Todos os postos ativos já têm escala neste dia.' });
 });
 
 // ---------------------------------------------------------------------------------------------

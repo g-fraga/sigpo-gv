@@ -25,7 +25,7 @@ P.iniciar(async (u) => {
         { titulo: 'Tipo', html: (a) => selo(nome('tipoAlerta', a.tipo), tomTipo(a.tipo)) },
         { titulo: 'Posto', html: (a) => `${esc(a.praia)}, ${esc(a.posto)}` },
         { titulo: 'Detalhe', html: (a) => `${a.gv_codigo ? `<strong>${esc(a.gv_codigo)}</strong> ${esc(a.gv_nome)}<br>` : ''}<small>${esc(a.detalhe || a.titulo)}</small>` },
-        { titulo: 'Situação', html: (a) => `${seloDe('situacaoAlerta', a.situacao)}${a.tratativas ? `<small>${a.tratativas} providência(s)</small>` : ''}` },
+        { titulo: 'Situação', html: (a) => `${seloDe('situacaoAlerta', a.situacao)}${a.tratativas ? `<small>${a.tratativas} ${a.tratativas === 1 ? 'providência' : 'providências'}</small>` : ''}` },
         { titulo: 'Ações', classe: 'acoes', html: (a) => `<button class="botao-pequeno" data-tratar="${a.id}">${['aberto', 'reconhecido'].includes(a.situacao) ? 'Tratar' : 'Ver'}</button>` },
       ], dados.alertas, 'Nenhum alerta com esses filtros.')}</section>`;
   }

@@ -33,7 +33,7 @@ P.iniciar(async () => {
         <aside>
           <section class="bloco"><h2>Sinal do terminal</h2>
             ${t.online ? `<p>Simule uma queda de conexão para ver as leituras ficarem guardadas no aparelho.</p><button class="botao botao-secundario" data-sinal="false">Simular queda de sinal</button>`
-              : `<p>${t.fila ? `<strong>${t.fila} leitura(s)</strong> guardada(s) no terminal, aguardando envio.` : 'Nenhuma leitura guardada no terminal.'}</p><button class="botao" data-sinal="true">Restabelecer sinal${t.fila ? ' e enviar leituras' : ''}</button>`}
+              : `<p>${t.fila ? `<strong>${t.fila} ${t.fila === 1 ? 'leitura guardada' : 'leituras guardadas'}</strong> no terminal, aguardando envio.` : 'Nenhuma leitura guardada no terminal.'}</p><button class="botao" data-sinal="true">Restabelecer sinal${t.fila ? ' e enviar leituras' : ''}</button>`}
           </section>
           <section class="bloco"><h2>Últimas leituras</h2>
             ${dados.ultimas.length ? `<ul class="lista-simples">${dados.ultimas.map((r) => `<li><span class="hora">${r.hora.slice(0, 5)}</span><span><strong>${esc(r.codigo || '?')}</strong> ${esc(nome('tipo', r.tipo))}

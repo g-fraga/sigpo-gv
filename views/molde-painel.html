@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{titulo}} | SIGPO-GV</title>
+  <meta name="description" content="{{descricao}}">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0D2B4E">
+  <link rel="icon" href="/assets/img/bandeira.svg" type="image/svg+xml">
+  {{estilos}}
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/comum.js" defer></script>
+  {{scripts}}
+</head>
+<body class="app {{corpo-classe}}">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <p class="aviso-prototipo">
+    Protótipo acadêmico com dados fictícios. Sem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina.
+  </p>
+
+  <header class="app-topo">
+    <div class="app-topo-interno">
+      <button class="app-menu-botao" type="button" aria-expanded="false" aria-controls="app-menu">Menu</button>
+      <a class="marca" href="/painel" aria-label="SIGPO-GV, início da área da equipe">
+        <svg class="marca-bandeira" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="4" y="3" width="3" height="35" rx="1.5" fill="#E8EEF4"/>
+          <path d="M7 5h28v10H7z" fill="#D7262E"/>
+          <path d="M7 15h28v10H7z" fill="#FFC530"/>
+        </svg>
+        <span class="marca-nome">SIGPO-GV<small>Área da equipe</small></span>
+      </a>
+      <div class="app-usuario">
+        <span class="app-relogio" id="painel-relogio" title="O site simula um dia de temporada: este é o horário da demonstração."></span>
+        <span class="app-quem"><strong id="painel-nome"></strong><small id="painel-perfil"></small></span>
+        <button class="app-sair" type="button" id="sair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-corpo">
+    <nav class="app-menu" id="app-menu" aria-label="Área da equipe">
+      <div id="painel-nav"></div>
+      <a class="app-menu-site" href="/">Ver o site público</a>
+    </nav>
+    <main id="conteudo" class="app-conteudo">
+{{conteudo}}
+    </main>
+  </div>
+</body>
+</html>

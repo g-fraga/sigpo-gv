@@ -15,7 +15,7 @@ P.iniciar(async () => {
       const d = await api('/api/gv/registros' + P.qs(filtros()));
       const fila = d.registros.filter((r) => !r.sincronizado).length;
       document.getElementById('resultado').innerHTML = `
-        ${fila ? `<p class="aviso">${fila} leitura(s) sua(s) estão guardadas em terminal sem sinal. Elas entram no sistema quando a conexão voltar; não é preciso fazer nada.</p>` : ''}
+        ${fila ? `<p class="aviso">${fila === 1 ? '1 leitura sua está guardada em terminal sem sinal. Ela entra' : fila + ' leituras suas estão guardadas em terminal sem sinal. Elas entram'} no sistema quando a conexão voltar; não é preciso fazer nada.</p>` : ''}
         <section class="bloco"><h2>Meus registros <small>${d.registros.length}</small></h2>
           <p class="bloco-nota">Se algum registro estiver errado, peça revisão. A supervisão analisa e você acompanha a resposta.</p>
           ${tabela([

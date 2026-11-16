@@ -3,13 +3,40 @@
 (() => {
   const { api, esc } = window.SIGPO;
 
+  // Menu lateral de cada perfil, em grupos: o que se usa no dia a dia vem primeiro.
   const MENU = {
-    admin: [['/painel/admin', 'Visão geral'], ['/painel/postos', 'Postos'], ['/painel/guarda-vidas', 'Guarda-vidas'], ['/painel/pulseiras', 'Pulseiras'],
-      ['/painel/escalas', 'Escalas'], ['/painel/registros', 'Registros'], ['/painel/alertas', 'Alertas'], ['/painel/revisoes', 'Revisões'],
-      ['/painel/terminal', 'Terminal'], ['/painel/auditoria', 'Auditoria']],
-    supervisor: [['/painel/supervisao', 'Minha região'], ['/painel/escalas', 'Escalas'], ['/painel/registros', 'Registros'], ['/painel/alertas', 'Alertas'],
-      ['/painel/revisoes', 'Revisões'], ['/painel/terminal', 'Terminal']],
-    guarda_vidas: [['/painel/meu', 'Início'], ['/painel/minha-escala', 'Minha escala'], ['/painel/meus-registros', 'Meus registros'], ['/painel/minhas-revisoes', 'Revisões']],
+    admin: [
+      ['Hoje', [['/painel/admin', 'Visão geral'], ['/painel/alertas', 'Alertas'], ['/painel/registros', 'Registros de presença'], ['/painel/revisoes', 'Pedidos de revisão']]],
+      ['Cadastros', [['/painel/postos', 'Postos'], ['/painel/guarda-vidas', 'Guarda-vidas'], ['/painel/pulseiras', 'Pulseiras'], ['/painel/escalas', 'Escalas']]],
+      ['Ferramentas', [['/painel/terminal', 'Terminal simulado'], ['/painel/posicoes', 'Posição dos postos'], ['/painel/auditoria', 'Auditoria']]],
+    ],
+    supervisor: [
+      ['Hoje', [['/painel/supervisao', 'Minha região'], ['/painel/alertas', 'Alertas'], ['/painel/registros', 'Registros de presença'], ['/painel/revisoes', 'Pedidos de revisão']]],
+      ['Planejamento', [['/painel/escalas', 'Escalas']]],
+      ['Ferramentas', [['/painel/terminal', 'Terminal simulado']]],
+    ],
+    guarda_vidas: [
+      ['', [['/painel/meu', 'Início'], ['/painel/minha-escala', 'Minha escala'], ['/painel/meus-registros', 'Meus registros'], ['/painel/minhas-revisoes', 'Pedidos de revisão']]],
+    ],
+  };
+
+  // Uma frase simples no topo de cada tela, dizendo para que ela serve.
+  const AJUDA = {
+    '/painel/admin': 'Como está a operação em toda a cidade agora: quem já chegou aos postos e o que precisa de atenção.',
+    '/painel/supervisao': 'Como está a sua região agora: quem já chegou aos postos e o que precisa de atenção.',
+    '/painel/alertas': 'Situações que precisam de alguém olhar, como um guarda-vidas que não confirmou presença ou um terminal sem sinal. Registre o que foi feito em cada uma.',
+    '/painel/registros': 'Cada vez que um guarda-vidas passa a pulseira no posto, ou a supervisão registra à mão, aparece uma linha aqui.',
+    '/painel/revisoes': 'Pedidos dos guarda-vidas para corrigir um registro. Analise e responda.',
+    '/painel/postos': 'Onde fica cada posto, em que horário funciona e quantas pessoas precisa.',
+    '/painel/guarda-vidas': 'As pessoas cadastradas, o posto de cada uma e o histórico de presença.',
+    '/painel/pulseiras': 'Cada guarda-vidas tem uma pulseira com chip para registrar presença. Aqui você entrega, bloqueia ou troca.',
+    '/painel/escalas': 'Quem trabalha em cada posto, em cada dia. Toda mudança fica guardada com o motivo.',
+    '/painel/terminal': 'Faz o papel do aparelho instalado no posto: escolha a pessoa e simule a pulseira encostando no leitor.',
+    '/painel/auditoria': 'Tudo o que foi alterado no sistema, com quem fez e quando.',
+    '/painel/meu': 'O seu dia de hoje e os seus últimos registros.',
+    '/painel/minha-escala': 'Os dias e horários em que você está escalado.',
+    '/painel/meus-registros': 'Todas as vezes que a sua presença foi registrada.',
+    '/painel/minhas-revisoes': 'Se algum registro seu está errado, peça a revisão aqui e acompanhe a resposta.',
   };
   const PERFIL = { admin: 'Administração', supervisor: 'Supervisão', guarda_vidas: 'Guarda-vidas' };
 
@@ -144,17 +171,28 @@
     try { await fn(u); } catch (e) { app.innerHTML = P.estado('erro', e.message); }
   });
 
+  const texto = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
   pronto.then((u) => {
     P.usuario = u;
-    document.getElementById('painel-perfil').textContent = `${u.nome.replace(' (fictício)', '')}, ${PERFIL[u.perfil].toLowerCase()}${u.regiao ? ' da região ' + u.regiao : ''}`;
-    document.getElementById('painel-relogio').textContent = `Demonstração: ${u.relogio.hhmm}`;
+    texto('painel-nome', u.nome.replace(' (fictício)', ''));
+    texto('painel-perfil', PERFIL[u.perfil] + (u.regiao ? ', ' + u.regiao : ''));
+    texto('painel-relogio', `Demonstração: ${u.relogio.hhmm}`);
     const atual = location.pathname;
-    document.getElementById('painel-nav').innerHTML = MENU[u.perfil].map(([href, rotulo]) =>
-      `<a href="${href}" ${href === atual ? 'aria-current="page"' : ''}>${esc(rotulo)}</a>`).join('');
-    // No celular, o menu rola para o lado: centraliza a aba atual sem mexer na rolagem da página.
-    const nav = document.getElementById('painel-nav'); const atualEl = nav.querySelector('[aria-current]');
-    if (atualEl) nav.scrollLeft = atualEl.offsetLeft - nav.clientWidth / 2 + atualEl.clientWidth / 2;
+    if (AJUDA[atual] && document.getElementById('painel-ajuda')) texto('painel-ajuda', AJUDA[atual]);
+    document.getElementById('painel-nav').innerHTML = MENU[u.perfil].map(([grupo, itens]) => `<div class="app-menu-grupo">
+      ${grupo ? `<p>${esc(grupo)}</p>` : ''}
+      ${itens.map(([href, rotulo]) => `<a href="${href}" ${href === atual ? 'aria-current="page"' : ''}>${esc(rotulo)}</a>`).join('')}
+    </div>`).join('');
   }).catch(() => { location.href = '/entrar'; });
+
+  // No celular, o menu lateral vira uma lista que abre com o botão "Menu".
+  const botaoMenu = document.querySelector('.app-menu-botao');
+  const menu = document.getElementById('app-menu');
+  botaoMenu?.addEventListener('click', () => {
+    const aberto = menu.classList.toggle('aberto');
+    botaoMenu.setAttribute('aria-expanded', String(aberto));
+    botaoMenu.textContent = aberto ? 'Fechar' : 'Menu';
+  });
 
   document.getElementById('sair').addEventListener('click', async () => {
     try { await api('/api/auth/sair', { method: 'POST' }); } finally { location.href = '/'; }

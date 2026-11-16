@@ -1,94 +1,142 @@
-// Visão geral (administração, todas as regiões) e visão da região (supervisão).
+// Visão geral (administração, todas as regiões) e "Minha região" (supervisão).
+// Pensada para ser lida de cima para baixo: primeiro o resumo em uma frase, depois o que precisa
+// de atenção e, por fim, a situação de cada posto.
 P.iniciar(async (u) => {
-  const { api, esc, tabela, selo, seloDe, nome } = P;
+  const { api, esc, selo, seloDe } = P;
   const admin = u.perfil === 'admin';
   const op = await P.opcoes();
+  const STATUS = window.SIGPO.STATUS;
 
   P.app.innerHTML = `
     <form class="barra-filtros" id="filtros">
-      ${admin ? `<label>Região<select name="regiao"><option value="">Todas</option>${op.regioes.filter((r) => r.id !== 'C').map((r) => `<option value="${r.id}">${esc(r.nome)}</option>`).join('')}</select></label>` : ''}
-      <label>Praia<select name="praia"><option value="">Todas</option>${op.praias.map((p) => `<option value="${p.slug}" data-regiao="${p.regiao_id}">${esc(p.nome)}</option>`).join('')}</select></label>
-      <p class="filtro-nota" id="atualizado"></p>
+      ${admin ? `<label>Região<select name="regiao"><option value="">Toda a cidade</option>${op.regioes.filter((r) => r.id !== 'C').map((r) => `<option value="${r.id}">${esc(r.nome)}</option>`).join('')}</select></label>` : ''}
+      <label>Praia<select name="praia"><option value="">Todas as praias</option>${op.praias.map((p) => `<option value="${p.slug}" data-regiao="${p.regiao_id}">${esc(p.nome)}</option>`).join('')}</select></label>
+      <label class="filtro-check"><input type="checkbox" name="problemas"> Mostrar só postos com algo a resolver</label>
     </form>
-    <div id="numeros">${P.estado('carregando', 'Carregando a situação dos postos...')}</div>
+
+    <div id="resumo">${P.estado('carregando', 'Carregando a situação dos postos...')}</div>
     <div id="regioes"></div>
-    <div class="grade-painel">
-      <section class="bloco">
-        <h2>Postos <small id="n-postos"></small></h2>
-        <p class="bloco-nota">Abra um posto para ver quem está escalado e a situação de cada pessoa.</p>
+
+    <div class="grade-visao">
+      <section class="bloco" aria-labelledby="t-postos">
+        <div class="bloco-topo">
+          <h2 id="t-postos">Situação dos postos</h2>
+          <ul class="legenda-situacao" aria-label="Legenda">
+            <li><i class="cor-ok"></i>Equipe completa</li><li><i class="cor-atencao"></i>Falta gente</li><li><i class="cor-neutro"></i>Sem sinal</li>
+          </ul>
+        </div>
+        <p class="bloco-nota">Toque em um posto para ver quem está escalado e se já chegou.</p>
         <div id="lista-postos"></div>
       </section>
-      <aside>
-        <section class="bloco"><h2>Mapa</h2><div class="mapa mapa-painel" id="mapa" role="region" aria-label="Mapa dos postos"></div></section>
-        <section class="bloco"><h2>Alertas abertos <small id="n-alertas"></small></h2><div id="alertas"></div></section>
-        <section class="bloco"><h2>Últimos registros</h2><div id="registros"></div></section>
-        <section class="bloco"><h2>Movimentações de hoje</h2><div id="movimentacoes"></div></section>
-      </aside>
+      <div class="coluna-visao">
+        <section class="bloco" aria-labelledby="t-atencao">
+          <h2 id="t-atencao">Precisa de atenção</h2>
+          <div id="atencao"></div>
+        </section>
+        <section class="bloco" aria-labelledby="t-mapa">
+          <h2 id="t-mapa">Mapa</h2>
+          <div class="mapa mapa-painel" id="mapa" role="region" aria-label="Mapa dos postos"></div>
+        </section>
+      </div>
     </div>`;
 
   const $ = (id) => document.getElementById(id);
-  let mapa = null; let marcadores = null; let filtroDoMapa = null;
-  const filtros = P.filtros(document.getElementById('filtros'), () => carregar());
+  let mapa = null; let marcadores = null; let filtroDoMapa = null; let ultimo = null;
+  const filtros = P.filtros($('filtros'), () => (ultimo && document.activeElement?.name === 'problemas' ? desenhar(ultimo) : carregar()));
 
-  const numero = (valor, rotulo, extra = '', link = '') => `<div class="numero-card">${link ? `<a href="${link}">` : ''}
-    <strong>${valor}</strong><span>${esc(rotulo)}</span>${extra ? `<small>${extra}</small>` : ''}${link ? '</a>' : ''}</div>`;
+  const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+  const temProblema = (p) => p.pendentes > 0 || p.sem_sinal || p.presentes < p.previsto;
+
+  // Frase que resume tudo, escrita para qualquer pessoa entender.
+  function resumo(d) {
+    const k = d.kpis;
+    const comProblema = d.postos.filter(temProblema).length;
+    const onde = admin && !d.regiao ? 'na cidade' : 'na região';
+    const faltam = k.pendentes ? `${plural(k.pendentes, 'pessoa ainda não confirmou', 'pessoas ainda não confirmaram')} presença.` : 'Todos os escalados até agora já confirmaram presença.';
+    const card = (valor, rotulo, nota, link, tom = '') => `<${link ? `a href="${link}"` : 'div'} class="cartao-numero ${tom}">
+        <strong>${valor}</strong><span>${esc(rotulo)}</span>${nota ? `<small>${nota}</small>` : ''}</${link ? 'a' : 'div'}>`;
+    return `
+      <section class="resumo-dia">
+        <p class="resumo-hora">Às ${d.relogio.hhmm} (horário da demonstração). Atualiza sozinho a cada minuto.</p>
+        <p class="resumo-frase"><b>${k.presentes} de ${k.escalados}</b> guarda-vidas escalados hoje estão nos postos ${onde}. ${faltam}</p>
+      </section>
+      <div class="cartoes-numero">
+        ${card(`${k.postos - comProblema}<em>/${k.postos}</em>`, 'postos sem problemas', comProblema ? plural(comProblema, 'posto precisa', 'postos precisam') + ' de atenção' : 'tudo certo')}
+        ${card(`${k.presentes}<em>/${k.escalados}</em>`, 'guarda-vidas no posto', [k.intervalo ? plural(k.intervalo, 'em intervalo', 'em intervalo') : '', k.transito ? plural(k.transito, 'em deslocamento', 'em deslocamento') : ''].filter(Boolean).join(', '))}
+        ${card(k.pendentes, 'não confirmaram presença', k.pendentes ? 'Ver quem' : '', k.pendentes ? '/painel/registros' : '', k.pendentes ? 'tom-perigo' : '')}
+        ${card(k.alertas, 'alertas para tratar', k.alertas ? 'Abrir alertas' : '', k.alertas ? '/painel/alertas' : '', k.alertas ? 'tom-atencao' : '')}
+      </div>`;
+  }
+
+  // Cartões por região (só na visão da cidade toda); clicar filtra pela região.
+  function regioes(d) {
+    if (!admin || d.regiao || d.regioes.length < 2) return '';
+    return `<div class="cartoes-regiao">${d.regioes.map((r) => `<button type="button" class="cartao-regiao" data-regiao="${r.id}">
+        <span>${esc(r.nome)}</span>
+        <strong>${r.presentes} de ${r.escalados}</strong><small>no posto</small>
+        ${r.pendentes || r.sem_sinal ? `<em>${[r.pendentes ? plural(r.pendentes, 'pendência', 'pendências') : '', r.sem_sinal ? plural(r.sem_sinal, 'terminal sem sinal', 'terminais sem sinal') : ''].filter(Boolean).join(', ')}</em>` : '<em class="ok">sem pendências</em>'}
+      </button>`).join('')}</div>`;
+  }
+
+  // Lista de alertas em linguagem simples.
+  const TITULO_ALERTA = { pendente: 'Não confirmou presença', offline: 'Terminal sem sinal', abaixo: 'Posto com menos gente', escala: 'Escala alterada', pulseira: 'Problema com pulseira' };
+  function atencao(d) {
+    if (!d.alertas.length) return P.estado('vazio', 'Nada pendente agora.');
+    const itens = d.alertas.slice(0, 5).map((a) => `<li class="aviso-item aviso-${a.tipo === 'pendente' || a.tipo === 'offline' ? 'perigo' : 'atencao'}">
+        <p class="aviso-titulo">${esc(TITULO_ALERTA[a.tipo] || a.titulo)} <small>${a.hora}</small></p>
+        <p class="aviso-onde">${esc(a.praia)}, ${esc(a.posto)}</p>
+        <p class="aviso-detalhe">${a.gv_nome ? `${esc(a.gv_nome)} (${esc(a.gv_codigo)}). ` : ''}${esc(a.detalhe || '')}</p>
+      </li>`).join('');
+    return `<ul class="lista-avisos">${itens}</ul><a class="botao botao-secundario botao-bloco" href="/painel/alertas">${d.alertas.length > 5 ? `Ver todos os ${d.alertas.length} alertas` : 'Tratar alertas'}</a>`;
+  }
 
   function pessoas(p) {
     if (!p.pessoas.length) return P.estado('vazio', 'Ninguém escalado neste posto hoje.');
     return `<ul class="lista-pessoas">${p.pessoas.map((pe) => `<li>
-      <span><strong>${esc(pe.codigo)}</strong> ${esc(pe.nome)}<small>${esc(pe.funcao)}, ${pe.inicio}–${pe.fim}</small></span>
-      <span>${seloDe('situacaoPessoa', pe.chave)} <small>${pe.desde ? 'desde ' + pe.desde : ''}</small></span></li>`).join('')}</ul>`;
+      <span class="pessoa-nome">${esc(pe.nome)} <small>${esc(pe.codigo)}, ${esc(pe.funcao.toLowerCase())}, ${pe.inicio} às ${pe.fim}</small></span>
+      <span>${seloDe('situacaoPessoa', pe.chave)}${pe.desde && pe.chave !== 'aguardando' && pe.chave !== 'pendentes' ? ` <small>desde ${pe.desde}</small>` : ''}</span></li>`).join('')}</ul>`;
+  }
+
+  function observacao(p) {
+    if (p.sem_sinal) return `Sem sinal desde ${p.atualizado}`;
+    const partes = [];
+    if (p.pendentes) partes.push(plural(p.pendentes, 'não confirmou', 'não confirmaram'));
+    if (p.intervalo) partes.push(plural(p.intervalo, 'em intervalo', 'em intervalo'));
+    if (p.transito) partes.push(plural(p.transito, 'em deslocamento', 'em deslocamento'));
+    return partes.join(', ');
+  }
+
+  function listaPostos(d) {
+    const soProblemas = filtros().problemas;
+    const lista = soProblemas ? d.postos.filter(temProblema) : d.postos;
+    if (!lista.length) return P.estado('vazio', soProblemas ? 'Nenhum posto com problema agora.' : 'Nenhum posto com esses filtros.');
+    const grupos = new Map();
+    for (const p of lista) { if (!grupos.has(p.praia)) grupos.set(p.praia, []); grupos.get(p.praia).push(p); }
+    return [...grupos].map(([praia, ps]) => `<div class="grupo-praia">
+      <h3>${esc(praia)}</h3>
+      ${ps.map((p) => `<details class="linha-posto" data-id="${p.id}">
+        <summary>
+          <span class="linha-posto-nome">${esc(p.nome)}${p.tipo === 'avancado' ? ' <small>avançado</small>' : ''}</span>
+          <span class="linha-posto-equipe"><b>${p.presentes}</b> de ${p.previsto}</span>
+          <span class="linha-posto-situacao">${selo(STATUS[p.status], P.tom(p.status))}</span>
+          <span class="linha-posto-obs">${esc(observacao(p))}</span>
+        </summary>
+        ${pessoas(p)}
+      </details>`).join('')}
+    </div>`).join('');
   }
 
   function desenhar(d) {
-    const k = d.kpis;
-    document.getElementById('atualizado').textContent = `Situação às ${d.relogio.hhmm} (horário da demonstração). Atualiza a cada minuto.`;
-    const linhasPostos = d.postos.map((p) => `
-      <details class="posto-linha posto-linha-${p.status}" data-id="${p.id}">
-        <summary>
-          <span class="posto-linha-nome"><strong>${esc(p.praia)}</strong> ${esc(p.nome)}${p.tipo === 'avancado' ? ' <small>(avançado)</small>' : ''}</span>
-          <span>${selo(window.SIGPO.STATUS[p.status], P.tom(p.status))}</span>
-          <span class="posto-linha-num" title="Previsto: ${p.previsto}"><b>${p.presentes}</b>/${p.escalados} <small>no posto</small></span>
-          <span class="posto-linha-hora">${p.pendentes ? `<b class="pend">${p.pendentes} pendente${p.pendentes > 1 ? 's' : ''}</b>` : ''}${p.sem_sinal ? `<b class="pend">sem sinal desde ${p.atualizado}</b>` : ''}${!p.pendentes && !p.sem_sinal && p.intervalo ? `${p.intervalo} em intervalo` : ''}</span>
-        </summary>
-        ${pessoas(p)}
-      </details>`).join('');
-
-    const abertos = new Set([...document.querySelectorAll('.posto-linha[open]')].map((d) => d.dataset.id));
-    $('numeros').innerHTML = `<div class="numeros-painel">
-        ${numero(k.postos, 'postos ativos', k.postos_com_pendencia ? `${k.postos_com_pendencia} com pendência ou sem sinal` : 'sem pendências')}
-        ${numero(k.escalados, 'escalados hoje', `${k.gv_cadastrados} guarda-vidas ${admin && !d.regiao ? 'cadastrados' : 'com posto base na região'}`)}
-        ${numero(k.presentes, 'no posto agora', `${k.intervalo} em intervalo, ${k.transito} em deslocamento`)}
-        ${numero(k.pendentes, 'confirmações pendentes', 'ver inconsistências', '/painel/registros')}
-        ${numero(k.alertas, 'alertas abertos', 'tratar alertas', '/painel/alertas')}
-        ${numero(k.revisoes, 'pedidos de revisão', 'aguardando análise', '/painel/revisoes')}
-      </div>`;
-    $('regioes').innerHTML = admin && !d.regiao && d.regioes.length > 1 ? `<section class="bloco"><h2>Por região</h2>${tabela([
-      { titulo: 'Região', html: (r) => `<strong>${esc(r.nome)}</strong>` },
-      { titulo: 'Postos', html: (r) => r.postos, classe: 'num' },
-      { titulo: 'Escalados', html: (r) => r.escalados, classe: 'num' },
-      { titulo: 'No posto', html: (r) => r.presentes, classe: 'num' },
-      { titulo: 'Pendências', html: (r) => (r.pendentes ? selo(r.pendentes, 'perigo') : '0'), classe: 'num' },
-      { titulo: 'Terminais sem sinal', html: (r) => r.sem_sinal, classe: 'num' },
-    ], d.regioes)}</section>` : '';
-    $('n-postos').textContent = d.postos.length;
-    $('lista-postos').innerHTML = d.postos.length ? linhasPostos : P.estado('vazio', 'Nenhum posto com esses filtros.');
-    for (const det of document.querySelectorAll('.posto-linha')) if (abertos.has(det.dataset.id)) det.open = true;
-    $('n-alertas').textContent = d.alertas.length;
-    $('alertas').innerHTML = d.alertas.length ? `<ul class="lista-alertas">${d.alertas.slice(0, 6).map((a) => `<li>
-        <span>${P.selo(nome('tipoAlerta', a.tipo), a.tipo === 'pendente' || a.tipo === 'offline' ? 'perigo' : 'atencao')} <small>${a.hora}</small></span>
-        <strong>${esc(a.praia)}, ${esc(a.posto)}</strong>
-        <span>${esc(a.gv_codigo ? a.gv_codigo + ' ' + a.gv_nome + '. ' : '')}${esc(a.detalhe || a.titulo)}</span></li>`).join('')}</ul>
-        <a class="link-mais" href="/painel/alertas">Tratar alertas</a>` : P.estado('vazio', 'Nenhum alerta aberto.');
-    $('registros').innerHTML = d.registros.length ? `<ul class="lista-simples">${d.registros.map((r) => `<li><span class="hora">${r.hora}</span>
-        <span><strong>${esc(r.gv_codigo || '')}</strong> ${esc(nome('tipo', r.tipo))} <small>${esc(r.praia)}, ${esc(r.posto)}${r.origem !== 'nfc' ? ' (' + esc(nome('origem', r.origem)) + ')' : ''}${r.sincronizado ? '' : ', aguardando sincronização'}</small></span></li>`).join('')}</ul>
-        <a class="link-mais" href="/painel/registros">Ver todos os registros</a>` : P.estado('vazio', 'Nenhum registro hoje.');
-    $('movimentacoes').innerHTML = d.movimentacoes.length ? `<ul class="lista-simples">${d.movimentacoes.map((m) => `<li><span class="hora">${m.saida || ''}</span>
-        <span><strong>${esc(m.gv_codigo)}</strong> ${esc(m.origem_praia ? m.origem_praia + ', ' + m.origem : '')} para ${esc(m.destino_praia)}, ${esc(m.destino)}
-        <small>${esc(m.motivo)}${m.chegada ? '. Chegou às ' + m.chegada : ''}</small></span></li>`).join('')}</ul>` : P.estado('vazio', 'Nenhuma movimentação hoje.');
+    ultimo = d;
+    $('resumo').innerHTML = resumo(d);
+    $('regioes').innerHTML = regioes(d);
+    const abertos = new Set([...document.querySelectorAll('.linha-posto[open]')].map((el) => el.dataset.id));
+    $('lista-postos').innerHTML = listaPostos(d);
+    for (const el of document.querySelectorAll('.linha-posto')) if (abertos.has(el.dataset.id)) el.open = true;
+    $('atencao').innerHTML = atencao(d);
 
     // Mapa: na atualização automática só troca os marcadores; ao mudar o filtro, refaz o enquadramento.
-    const chave = JSON.stringify(filtros());
+    const chave = JSON.stringify({ regiao: filtros().regiao, praia: filtros().praia });
     if (!mapa) mapa = window.SIGPO.mapa.criarMapa($('mapa'));
     if (chave !== filtroDoMapa) {
       if (marcadores) Object.values(marcadores).forEach((m) => m.remove());
@@ -99,17 +147,22 @@ P.iniciar(async (u) => {
   }
 
   // Ao trocar a região, a lista de praias mostra só as daquela região.
-  if (admin) {
-    const selRegiao = document.querySelector('[name=regiao]'); const selPraia = document.querySelector('[name=praia]');
-    selRegiao.addEventListener('change', () => {
-      for (const o of selPraia.options) o.hidden = !!(selRegiao.value && o.dataset.regiao && o.dataset.regiao !== selRegiao.value);
-      if (selPraia.selectedOptions[0]?.hidden) selPraia.value = '';
-    });
+  const selPraia = document.querySelector('[name=praia]');
+  const selRegiao = document.querySelector('[name=regiao]');
+  function filtrarPraias() {
+    for (const o of selPraia.options) o.hidden = !!(selRegiao?.value && o.dataset.regiao && o.dataset.regiao !== selRegiao.value);
+    if (selPraia.selectedOptions[0]?.hidden) selPraia.value = '';
   }
+  selRegiao?.addEventListener('change', filtrarPraias);
+  $('regioes').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-regiao]');
+    if (!b || !selRegiao) return;
+    selRegiao.value = b.dataset.regiao; filtrarPraias(); carregar();
+  });
 
   async function carregar() {
-    try { desenhar(await api('/api/painel/visao' + P.qs(filtros()))); }
-    catch (e) { $('numeros').innerHTML = P.estado('erro', e.message); }
+    try { desenhar(await api('/api/painel/visao' + P.qs({ regiao: filtros().regiao, praia: filtros().praia }))); }
+    catch (e) { $('resumo').innerHTML = P.estado('erro', e.message); }
   }
   await carregar();
   setInterval(carregar, 60_000);

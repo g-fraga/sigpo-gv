@@ -47,10 +47,10 @@ rotas.get('/inicio', async (req, res) => {
     WHERE guarda_vidas_id = $1 AND situacao <> 'aberto' AND respondido_em >= $2::date - 7 ORDER BY respondido_em DESC`, [req.gv, relogio.data]);
   for (const r of respostas) avisos.push({ tipo: 'revisao', texto: `Seu pedido de revisão nº ${r.id} foi ${r.situacao} em ${r.quando}.`, link: '/painel/minhas-revisoes' });
   const [{ n: abertos }] = await query("SELECT COUNT(*)::int AS n FROM pedidos_revisao WHERE guarda_vidas_id = $1 AND situacao = 'aberto'", [req.gv]);
-  if (abertos) avisos.push({ tipo: 'pendente', texto: `${abertos} pedido(s) de revisão aguardando análise da supervisão.`, link: '/painel/minhas-revisoes' });
+  if (abertos) avisos.push({ tipo: 'pendente', texto: abertos === 1 ? '1 pedido de revisão aguardando análise da supervisão.' : `${abertos} pedidos de revisão aguardando análise da supervisão.`, link: '/painel/minhas-revisoes' });
   if (hoje && hoje.versao > 1) avisos.push({ tipo: 'escala', texto: `A escala do seu posto foi alterada hoje (versão ${hoje.versao}).`, link: '/painel/minha-escala' });
   const [{ n: fila }] = await query('SELECT COUNT(*)::int AS n FROM registros WHERE guarda_vidas_id = $1 AND NOT sincronizado', [req.gv]);
-  if (fila) avisos.push({ tipo: 'sinc', texto: `${fila} leitura(s) sua(s) guardada(s) em terminal sem sinal, aguardando sincronização.`, link: '/painel/meus-registros' });
+  if (fila) avisos.push({ tipo: 'sinc', texto: fila === 1 ? '1 leitura sua está guardada em terminal sem sinal, aguardando sincronização.' : `${fila} leituras suas estão guardadas em terminal sem sinal, aguardando sincronização.`, link: '/painel/meus-registros' });
   if (terminal) avisos.push({ tipo: 'terminal', texto: terminal });
   res.json({ relogio, eu, hoje, presenca, recentes, avisos });
 });

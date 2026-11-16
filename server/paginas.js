@@ -2,11 +2,30 @@
 // que tem o cabeçalho, o menu e o rodapé. Assim o menu existe em um só arquivo.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { query } from './db.js';
 
 const pastaViews = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../views');
+const pastaPublica = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public');
 const PRODUCAO = process.env.NODE_ENV === 'production';
+
+// Versão dos arquivos de estilo e script. Entra no endereço (site.css?v=...), então o navegador
+// baixa a versão nova logo depois de uma atualização, em vez de usar a cópia antiga guardada.
+let versaoCache = null;
+function versaoDosArquivos() {
+  if (PRODUCAO && versaoCache) return versaoCache;
+  const h = crypto.createHash('sha1');
+  const percorrer = (pasta) => {
+    for (const nome of fs.readdirSync(pasta).sort()) {
+      const c = path.join(pasta, nome);
+      if (fs.statSync(c).isDirectory()) percorrer(c); else h.update(nome).update(fs.readFileSync(c));
+    }
+  };
+  percorrer(pastaPublica);
+  versaoCache = h.digest('hex').slice(0, 10);
+  return versaoCache;
+}
 
 // Dados de cada página: título da aba, descrição, item do menu marcado e scripts.
 const PAGINAS = {
@@ -16,8 +35,8 @@ const PAGINAS = {
   seguranca: { titulo: 'Segurança na praia', descricao: 'Bandeiras, correntes de retorno e o que fazer em uma emergência.', menu: 'seguranca' },
   sobre: { titulo: 'Sobre o projeto', descricao: 'O que é o SIGPO-GV Web, como funciona e por que os dados são fictícios.', menu: 'sobre' },
   entrar: { titulo: 'Entrar', descricao: 'Acesso da equipe (contas de demonstração).', menu: 'entrar', scripts: ['/assets/js/entrar.js'] },
-  403: { titulo: 'Acesso não permitido', descricao: 'Seu perfil não tem acesso a esta página.', menu: 'entrar', restrita: true },
-  posicoes: { titulo: 'Conferir posição dos postos', descricao: 'Ajuste da posição dos postos no mapa.', menu: 'entrar', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/posicoes.js'], estilos: ['/vendor/leaflet/leaflet.css'], restrita: true },
+  403: { titulo: 'Acesso não permitido', descricao: 'Seu perfil não tem acesso a esta página.', menu: 'entrar', restrita: true, scripts: ['/assets/js/painel/base.js'] },
+  posicoes: { titulo: 'Posição dos postos', descricao: 'Ajuste da posição dos postos no mapa.', menu: 'entrar', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/painel/base.js', '/assets/js/posicoes.js'], estilos: ['/vendor/leaflet/leaflet.css'], restrita: true },
   404: { titulo: 'Página não encontrada', descricao: 'Esta página não existe.', menu: '' },
 };
 
@@ -29,9 +48,9 @@ export const PAINEL = {
   supervisao: { titulo: 'Minha região', perfis: ['supervisor'], js: 'visao', mapa: true },
   postos: { titulo: 'Postos', perfis: ADM, js: 'postos' },
   'guarda-vidas': { titulo: 'Guarda-vidas', perfis: ADM, js: 'guarda-vidas' },
-  pulseiras: { titulo: 'Pulseiras NFC', perfis: ADM, js: 'pulseiras' },
+  pulseiras: { titulo: 'Pulseiras', perfis: ADM, js: 'pulseiras' },
   escalas: { titulo: 'Escalas', perfis: OPERACAO, js: 'escalas' },
-  registros: { titulo: 'Registros', perfis: OPERACAO, js: 'registros' },
+  registros: { titulo: 'Registros de presença', perfis: OPERACAO, js: 'registros' },
   alertas: { titulo: 'Alertas', perfis: OPERACAO, js: 'alertas' },
   revisoes: { titulo: 'Pedidos de revisão', perfis: OPERACAO, js: 'revisoes' },
   terminal: { titulo: 'Terminal simulado', perfis: OPERACAO, js: 'terminal' },
@@ -40,7 +59,7 @@ export const PAINEL = {
   meu: { titulo: 'Início', perfis: GV, js: 'gv-inicio' },
   'minha-escala': { titulo: 'Minha escala', perfis: GV, js: 'gv-escala' },
   'meus-registros': { titulo: 'Meus registros', perfis: GV, js: 'gv-registros' },
-  'minhas-revisoes': { titulo: 'Revisões', perfis: GV, js: 'gv-revisoes' },
+  'minhas-revisoes': { titulo: 'Pedidos de revisão', perfis: GV, js: 'gv-revisoes' },
 };
 export const INICIO_DO_PERFIL = { admin: '/painel/admin', supervisor: '/painel/supervisao', guarda_vidas: '/painel/meu' };
 
@@ -60,14 +79,16 @@ export function renderizar(nome, extra = {}) {
   for (const [k, v] of Object.entries(extra.variaveis || {})) corpo = corpo.replaceAll(`{{${k}}}`, escapar(v));
   const estilos = (pg.estilos || []).map((h) => `<link rel="stylesheet" href="${h}">`).join('\n  ');
   const scripts = (pg.scripts || []).map((s) => `<script src="${s}" defer></script>`).join('\n  ');
-  return ler('molde.html')
+  // A área da equipe tem um molde próprio (menu lateral, sem o menu do site público).
+  return ler(pg.restrita ? 'molde-painel.html' : 'molde.html')
     .replace('{{titulo}}', escapar(pg.titulo))
     .replace('{{descricao}}', escapar(pg.descricao))
     .replace('{{estilos}}', estilos)
     .replace('{{scripts}}', scripts)
     .replace('{{corpo-classe}}', pg.restrita ? 'restrita' : 'publica')
     .replace('{{conteudo}}', corpo)
-    .replace(`data-menu="${pg.menu}"`, `data-menu="${pg.menu}" aria-current="page"`);
+    .replace(`data-menu="${pg.menu}"`, `data-menu="${pg.menu}" aria-current="page"`)
+    .replace(/(["'(])(\/assets\/[^"'?)\s]+)(?=["')])/g, `$1$2?v=${versaoDosArquivos()}`);
 }
 
 export async function paginaPraia(slug) {

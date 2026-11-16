@@ -463,12 +463,13 @@ rotas.post('/terminais/:id/sinal', async (req, res) => {
     await query('UPDATE terminais SET online = TRUE, offline_desde = NULL, ultima_comunicacao = $1 WHERE id = $2', [ts, t.id]);
     const abertos = await query("SELECT id FROM alertas WHERE tipo = 'offline' AND posto_id = $1 AND situacao IN ('aberto','reconhecido')", [t.posto_id]);
     for (const a of abertos) {
-      const nota = `Sinal restabelecido; ${enviados.length} leitura(s) sincronizada(s).`;
+      const qtd = enviados.length === 1 ? '1 leitura sincronizada' : `${enviados.length} leituras sincronizadas`;
+      const nota = `Sinal restabelecido; ${qtd}.`;
       await query("UPDATE alertas SET situacao = 'resolvido', tratado_por = $1, tratado_em = $2, nota = $3 WHERE id = $4", [u.id, ts, nota, a.id]);
       await registrarTratativa(a.id, u, 'resolvido', nota);
     }
-    await auditar(u, 'Restabeleceu sinal do terminal', `${t.codigo} (${t.praia}, ${t.posto})`, `${enviados.length} leitura(s) sincronizada(s)`);
-    return res.json({ ok: true, mensagem: `Sinal restabelecido. ${enviados.length} leitura(s) guardada(s) no terminal foram enviadas.` });
+    await auditar(u, 'Restabeleceu sinal do terminal', `${t.codigo} (${t.praia}, ${t.posto})`, enviados.length === 1 ? '1 leitura sincronizada' : `${enviados.length} leituras sincronizadas`);
+    return res.json({ ok: true, mensagem: enviados.length === 1 ? 'Sinal restabelecido. 1 leitura guardada no terminal foi enviada.' : `Sinal restabelecido. ${enviados.length} leituras guardadas no terminal foram enviadas.` });
   }
   await query('UPDATE terminais SET online = FALSE, offline_desde = $1 WHERE id = $2', [ts, t.id]);
   await query(`INSERT INTO alertas (chave, tipo, posto_id, titulo, detalhe, criado_em) VALUES ($1,'offline',$2,'Terminal sem sinal',$3,$4) ON CONFLICT (chave) DO NOTHING`,
