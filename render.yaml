@@ -1,0 +1,32 @@
+# Configuração de publicação no Render (Blueprint).
+# Cria o site e liga o banco PostgreSQL sem precisar copiar senha nenhuma:
+# o Render preenche DATABASE_URL e gera SESSAO_SEGREDO sozinho.
+services:
+  - type: web
+    name: sigpo-gv
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: SESSAO_SEGREDO
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sigpo-gv-banco
+          property: connectionString
+
+databases:
+  - name: sigpo-gv-banco
+    plan: free
+    region: virginia
+    postgresMajorVersion: "16"
+    databaseName: sigpo_gv_banco
+    user: sigpo_gv_banco_user
