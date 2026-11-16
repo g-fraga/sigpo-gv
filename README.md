@@ -92,7 +92,7 @@ Para incluir um posto novo, acrescente uma linha no `postos.csv` com um código 
 
 ## O relógio da demonstração
 
-O site simula um dia de temporada. Quando o banco é criado, o relógio do sistema marca **10:30** e anda junto com o tempo real. Assim, mesmo apresentando à noite, os postos aparecem em operação. Todo dia o banco é recriado automaticamente, e `npm run reset` volta o relógio para 10:30 na hora que você quiser.
+O site simula um dia de temporada. Quando o banco é criado, o relógio do sistema marca **10:30** e anda junto com o tempo real. Assim, mesmo apresentando à noite, os postos aparecem em operação. Na virada do dia, os cadastros e o histórico continuam e o sistema gera as escalas e o cenário do novo dia. Quando os arquivos de dados mudam (nova versão), o banco é recriado do zero. `npm run reset` recria tudo e volta o relógio para 10:30 na hora que você quiser.
 
 ## Tecnologias
 
@@ -150,7 +150,7 @@ O GitHub só guarda o código; quem roda o site é o Render (plano gratuito).
 
 **Site publicado:** https://sigpo-gv.onrender.com
 
-O repositório tem o arquivo `render.yaml` (Blueprint): ele cria o site e o banco e liga os dois sozinho, sem copiar senha. Cada `git push` na branch `main` publica a nova versão. Os passos abaixo são o caminho manual, caso precise refazer.
+O repositório tem o arquivo `render.yaml` (Blueprint): ele cria o site e o banco e liga os dois sozinho, sem copiar senha. O serviço foi criado pelo endereço público do repositório, sem o aplicativo do GitHub ligado ao Render; por isso uma versão nova só entra no ar com **Manual Deploy > Deploy latest commit** no painel do Render. Para publicar sozinho a cada `git push`, conecte a conta do GitHub em Render > Account Settings > Git. Os passos abaixo são o caminho manual, caso precise refazer.
 
 1. Entre em [render.com](https://render.com) com a sua conta do GitHub.
 2. **New > Postgres**: nome `sigpo-gv-banco`, plano **Free**. Depois de criado, copie a **Internal Database URL**.
@@ -167,5 +167,5 @@ O repositório tem o arquivo `render.yaml` (Blueprint): ele cria o site e o banc
 Cuidados do plano gratuito:
 - O site "dorme" depois de 15 minutos sem visitas e leva cerca de 1 minuto para acordar. Abra o endereço uns minutos antes de apresentar.
 - O banco gratuito do Render expira 30 dias depois de criado. Para uma apresentação, crie com até 30 dias de antecedência.
-- Cada `git push` para o GitHub publica a nova versão sozinho.
+- Depois de um `git push`, publique com **Manual Deploy > Deploy latest commit** (ou conecte o GitHub ao Render para ficar automático).
 - No servidor, use PostgreSQL de verdade (`DATABASE_URL`). O PGlite usa memória demais para os 512 MB do plano gratuito.
