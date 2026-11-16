@@ -123,6 +123,10 @@ public/
 
 O GitHub só guarda o código; quem roda o site é o Render (plano gratuito).
 
+**Site publicado:** https://sigpo-gv.onrender.com
+
+O repositório tem o arquivo `render.yaml` (Blueprint): ele cria o site e o banco e liga os dois sozinho, sem copiar senha. Cada `git push` na branch `main` publica a nova versão. Os passos abaixo são o caminho manual, caso precise refazer.
+
 1. Entre em [render.com](https://render.com) com a sua conta do GitHub.
 2. **New > Postgres**: nome `sigpo-gv-banco`, plano **Free**. Depois de criado, copie a **Internal Database URL**.
 3. **New > Web Service**: escolha o repositório `sigpo-gv`, na mesma região do banco.
