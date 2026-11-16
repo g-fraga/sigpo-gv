@@ -2,13 +2,14 @@
 
 Portal das praias de Florianópolis com os postos de guarda-vidas e o efetivo em cada um, mais uma área restrita para a equipe (administração, supervisão e guarda-vidas).
 
-> **Protótipo acadêmico com dados fictícios.** Trabalho da disciplina Prática de Programação Web (Análise e Desenvolvimento de Sistemas, FMP). Não tem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina. As praias existem; postos, pessoas, horários e números são inventados.
+> **Protótipo acadêmico com dados fictícios.** Trabalho da disciplina Prática de Programação Web (Análise e Desenvolvimento de Sistemas, FMP). Não tem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina. Praias e postos seguem uma lista levantada pelo autor, com posições aproximadas no mapa; pessoas, escalas, horários e números de efetivo são inventados.
 
 ## O que já funciona
 
-- **Início**: mapa com os 32 postos, busca de praia, números da cidade, dica do dia e lista de praias por região. Atualiza sozinho a cada minuto.
+- **Início**: mapa com os 42 postos, busca de praia, números da cidade, dica do dia e as 42 praias por região (Norte, Leste, Sul e Continente). Atualiza sozinho a cada minuto.
 - **Praias e postos**: lista com filtro por nome e região.
-- **Página de cada praia** (`/praias/joaquina`, por exemplo): um cartão por posto, com o efetivo, o horário da última atualização e o aviso quando o terminal está sem sinal.
+- **Página de cada praia** (`/praias/joaquina`, por exemplo): um cartão por posto, com o efetivo, o horário da última atualização e o aviso quando o terminal está sem sinal. Praias sem posto mostram orientações e o link da balneabilidade do IMA.
+- **Conferir posição dos postos** (`/painel/posicoes`, conta admin): arraste o marcador até a guarita ou cole a coordenada do Google Maps.
 - **Segurança**: orientações com fontes citadas.
 - **Sobre**: o projeto, como funciona, dados e privacidade.
 - **Área da equipe**: login com as contas de demonstração (as telas internas vêm nas próximas etapas).
@@ -51,6 +52,23 @@ Abra **http://localhost:3000**. Na primeira vez, o servidor cria o banco sozinho
 | `npm start` | Inicia o servidor (modo de publicação). |
 | `npm run reset` | Apaga e recria o banco com os dados de demonstração. |
 
+## Praias e postos (catálogo)
+
+Os dados reais ficam em dois arquivos, que você pode abrir no LibreOffice/Excel (separados por ponto e vírgula):
+
+- `server/catalogo/praias.csv`: as 42 praias e a Lagoa da Conceição, com região e observação.
+- `server/catalogo/postos.csv`: os postos (código, praia, nome, tipo, se é sazonal, latitude, longitude, precisão e observação).
+
+Hoje o arquivo tem **42 postos** e todos com posição **aproximada**. Para conferir:
+
+1. Rode `npm run dev`, entre como `admin@sigpo.demo` e abra **Conferir a posição dos postos** (`/painel/posicoes`).
+2. Arraste cada marcador até a guarita, ou cole a coordenada copiada do Google Maps (botão direito em cima da guarita, depois clique na coordenada).
+3. Clique em **Baixar postos.csv** e substitua o arquivo `server/catalogo/postos.csv` no repositório.
+
+As posições conferidas ficam guardadas mesmo quando a demonstração é recriada. No servidor publicado, o ajuste fica desligado (as contas de demonstração são públicas); para ligar, use a variável `AJUSTE_POSICOES=sim`.
+
+Para incluir um posto novo, acrescente uma linha no `postos.csv` com um código novo (ex.: `N20`) e rode `npm run reset`.
+
 ## O relógio da demonstração
 
 O site simula um dia de temporada. Quando o banco é criado, o relógio do sistema marca **10:30** e anda junto com o tempo real. Assim, mesmo apresentando à noite, os postos aparecem em operação. Todo dia o banco é recriado automaticamente, e `npm run reset` volta o relógio para 10:30 na hora que você quiser.
@@ -73,13 +91,15 @@ server/
   index.js          servidor: segurança, sessão, rotas e recriação diária da demonstração
   db.js             conexão com o banco (PGlite ou PostgreSQL)
   relogio.js        relógio da demonstração
-  dados-demo.js     cria os dados fictícios
+  dados-demo.js     cria o banco: catálogo real (CSV) + pessoas e leituras fictícias
+  catalogo/         praias.csv e postos.csv
   reset.js          comando npm run reset
   paginas.js        monta cada página dentro do molde (cabeçalho, menu e rodapé)
   sql/schema.sql    tabelas do banco
   regras/presenca.js  calcula quem está em cada posto a partir da escala e das leituras
   rotas/publico.js  API pública (só números, sem dados pessoais)
   rotas/auth.js     login, logout e controle de perfil
+  rotas/admin.js    administração (conferir posição dos postos)
 views/
   molde.html        cabeçalho, menu e rodapé comuns
   paginas/          conteúdo de cada página

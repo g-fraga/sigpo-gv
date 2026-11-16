@@ -1,0 +1,27 @@
+    <section class="cabeca-pagina">
+      <div class="interno">
+        <p class="trilha"><a href="/painel">Área da equipe</a> / Administração</p>
+        <h1>Conferir a posição dos postos</h1>
+        <p>Arraste cada marcador até a guarita no mapa, ou cole a coordenada copiada do Google Maps. Cada posição salva fica marcada como conferida.</p>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="interno">
+        <p class="aviso-ajuste" id="aviso" role="status"></p>
+        <div class="ajuste-grade">
+          <div class="mapa mapa-ajuste" id="mapa" role="region" aria-label="Mapa para ajustar a posição dos postos"></div>
+          <div>
+            <div class="ajuste-topo">
+              <p id="contagem">Carregando...</p>
+              <a class="botao botao-secundario" href="/api/admin/postos.csv" download>Baixar postos.csv</a>
+            </div>
+            <div class="campo">
+              <label for="filtro">Filtrar por praia ou posto</label>
+              <input id="filtro" type="search" autocomplete="off" placeholder="Ex.: Campeche">
+            </div>
+            <ol class="lista-ajuste" id="lista"></ol>
+          </div>
+        </div>
+      </div>
+    </section>

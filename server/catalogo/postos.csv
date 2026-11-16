@@ -1,0 +1,43 @@
+codigo;praia;posto;tipo;sazonal;latitude;longitude;precisao;observacao
+N01;jurere-tradicional;Posto Central;guarita;nao;-27.4377;-48.4905;aproximada;
+N02;canasvieiras;Posto 01;guarita;nao;-27.4283;-48.4700;aproximada;
+N03;canasvieiras;Posto 02;guarita;nao;-27.4277;-48.4650;aproximada;Ativado em 2024, segundo a lista
+N04;canasvieiras;Posto Central;guarita;nao;-27.4273;-48.4600;aproximada;
+N05;canasvieiras;Posto Trapiche;guarita;nao;-27.4269;-48.4552;aproximada;Próximo ao trapiche
+N06;cachoeira-do-bom-jesus;Posto Central;guarita;nao;-27.4218;-48.4432;aproximada;
+N07;cachoeira-do-bom-jesus;Posto Norte;guarita;nao;-27.4190;-48.4385;aproximada;
+N08;ponta-das-canas;Posto Central;guarita;nao;-27.4003;-48.4335;aproximada;
+N09;ponta-das-canas;Posto Norte (Ponta);guarita;nao;-27.3950;-48.4318;aproximada;
+N10;lagoinha-do-norte;Posto Central;guarita;nao;-27.3885;-48.4225;aproximada;
+N11;brava;Posto Norte;guarita;nao;-27.3935;-48.4145;aproximada;
+N12;brava;Posto Central;guarita;nao;-27.3985;-48.4140;aproximada;
+N13;brava;Posto Sul;guarita;nao;-27.4033;-48.4145;aproximada;
+N14;ingleses;Posto Norte (Canto);guarita;nao;-27.4245;-48.3960;aproximada;
+N15;ingleses;Posto Central;guarita;nao;-27.4370;-48.3930;aproximada;
+N16;ingleses;Posto Sul (Dunas);guarita;nao;-27.4500;-48.3850;aproximada;
+N17;santinho;Posto Norte;guarita;nao;-27.4615;-48.3800;aproximada;Próximo ao costão
+N18;santinho;Posto Central;guarita;nao;-27.4680;-48.3790;aproximada;Em frente ao acesso principal
+N19;daniela;Posto Central;guarita;nao;-27.4500;-48.5290;aproximada;
+L01;mocambique;Posto Central (acesso centro);guarita;nao;-27.5030;-48.4006;aproximada;
+L02;mocambique;Posto Parque Florestal;guarita;nao;-27.5350;-48.4182;aproximada;Acesso pelo Parque Florestal do Rio Vermelho
+L03;barra-da-lagoa;Posto Central;guarita;nao;-27.5650;-48.4345;aproximada;
+L04;barra-da-lagoa;Posto Canal;guarita;nao;-27.5720;-48.4380;aproximada;Próximo ao canal da Barra
+L05;mole;Posto Central;guarita;nao;-27.6025;-48.4335;aproximada;
+L06;mole;Posto Sul;guarita;nao;-27.6060;-48.4345;aproximada;
+L07;joaquina;Posto Central;guarita;nao;-27.6290;-48.4490;aproximada;
+L08;joaquina;Posto Pinheirinho;guarita;nao;-27.6340;-48.4510;aproximada;
+L09;joaquina;Posto Avançado Dunas;avancado;nao;-27.6400;-48.4545;aproximada;Sem terminal de pulseira
+L10;lagoa-da-conceicao;Posto Lagoa;guarita;sim;-27.6085;-48.4625;aproximada;Só na temporada
+S01;campeche;Posto Novo Campeche;guarita;nao;-27.6560;-48.4700;aproximada;
+S02;campeche;Posto Pequeno Príncipe;guarita;nao;-27.6700;-48.4760;aproximada;
+S03;campeche;Posto Central;guarita;nao;-27.6790;-48.4800;aproximada;
+S04;campeche;Posto Lomba do Sabão;guarita;nao;-27.6880;-48.4850;aproximada;
+S05;campeche;Posto Riozinho;guarita;nao;-27.6960;-48.4900;aproximada;
+S06;morro-das-pedras;Posto Central;guarita;nao;-27.7150;-48.5050;aproximada;
+S07;armacao;Posto Central;guarita;nao;-27.7480;-48.5055;aproximada;Próximo à igreja e ao trapiche
+S08;matadeiro;Posto Matadeiro;guarita;nao;-27.7545;-48.5000;aproximada;Logo após a travessia do rio
+S09;lagoinha-do-leste;Posto Avançado Norte;avancado;sim;-27.7700;-48.4870;aproximada;Só na alta temporada; sem terminal de pulseira
+S10;pantano-do-sul;Posto Central;guarita;nao;-27.7810;-48.5085;aproximada;
+S11;acores;Posto Central;guarita;nao;-27.7860;-48.5230;aproximada;
+S12;solidao;Posto Central;guarita;nao;-27.7950;-48.5330;aproximada;
+S13;naufragados;Posto Avançado;avancado;sim;-27.8330;-48.5645;aproximada;Só na alta temporada; sem terminal de pulseira

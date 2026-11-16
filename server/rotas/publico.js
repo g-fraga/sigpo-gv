@@ -16,35 +16,49 @@ function resumir(postos) {
   };
 }
 
-function agruparPorPraia(postos) {
-  const praias = new Map();
-  for (const p of postos) {
-    if (!praias.has(p.slug)) praias.set(p.slug, { slug: p.slug, nome: p.praia, regiao_id: p.regiao_id, regiao: p.regiao, lista: [] });
-    praias.get(p.slug).lista.push(p);
-  }
-  return [...praias.values()].map((pr) => ({ ...pr, ...resumir(pr.lista) })); // resumir() devolve postos = quantidade
+// Situação geral da praia, a partir dos postos dela.
+function statusDaPraia(postos) {
+  if (!postos.length) return 'sem_posto';
+  if (postos.every((p) => !p.em_horario)) return 'fechado';
+  if (postos.some((p) => p.sem_sinal)) return 'sem_atualizacao';
+  if (postos.some((p) => p.status === 'sem_efetivo')) return 'sem_efetivo';
+  if (postos.some((p) => p.status === 'reduzido')) return 'reduzido';
+  return 'completo';
 }
+
+const media = (lista, campo) => (lista.length ? lista.reduce((s, p) => s + p[campo], 0) / lista.length : null);
+
+// Junta todas as praias do catálogo (com ou sem posto) com a situação dos seus postos.
+function montarPraias(catalogo, postos) {
+  return catalogo.map((pr) => {
+    const lista = postos.filter((p) => p.slug === pr.slug);
+    return {
+      ...pr, ...resumir(lista), status: statusDaPraia(lista), ids: lista.map((p) => p.id),
+      latitude: media(lista, 'latitude'), longitude: media(lista, 'longitude'), // centro da praia = média dos postos
+    };
+  });
+}
+
+const SQL_PRAIAS = `SELECT pr.slug, pr.nome, pr.regiao_id, r.nome AS regiao, pr.observacao
+  FROM praias pr JOIN regioes r ON r.id = pr.regiao_id`;
 
 // GET /api/publico/situacao → relógio, totais da cidade, praias e postos.
 rotas.get('/situacao', async (req, res) => {
   const { relogio, postos } = await situacaoDosPostos();
   const publicos = postos.map(paraPublico);
-  const coords = await query('SELECT slug, latitude, longitude FROM praias');
-  const coordDe = Object.fromEntries(coords.map((c) => [c.slug, c]));
-  const praias = agruparPorPraia(publicos).map(({ lista, ...pr }) => ({
-    ...pr, latitude: coordDe[pr.slug].latitude, longitude: coordDe[pr.slug].longitude, ids: lista.map((p) => p.id),
-  }));
-  res.json({ ficticio: true, relogio, totais: resumir(publicos), praias, postos: publicos });
+  const catalogo = await query(SQL_PRAIAS + ' ORDER BY pr.ordem');
+  const regioes = await query('SELECT id, nome FROM regioes ORDER BY CASE id WHEN \'N\' THEN 1 WHEN \'L\' THEN 2 WHEN \'S\' THEN 3 ELSE 4 END');
+  res.json({ ficticio: true, relogio, totais: resumir(publicos), regioes, praias: montarPraias(catalogo, publicos), postos: publicos });
 });
 
 // GET /api/publico/praias/:slug → uma praia e seus postos.
 rotas.get('/praias/:slug', async (req, res) => {
-  const [praia] = await query(`SELECT pr.slug, pr.nome, pr.latitude, pr.longitude, r.nome AS regiao
-    FROM praias pr JOIN regioes r ON r.id = pr.regiao_id WHERE pr.slug = $1`, [req.params.slug]);
-  if (!praia) return res.status(404).json({ erro: 'Praia não encontrada.' });
+  const catalogo = await query(SQL_PRAIAS + ' WHERE pr.slug = $1', [req.params.slug]);
+  if (!catalogo.length) return res.status(404).json({ erro: 'Praia não encontrada.' });
   const { relogio, postos } = await situacaoDosPostos();
-  const daPraia = postos.filter((p) => p.slug === praia.slug).map(paraPublico);
-  res.json({ ficticio: true, relogio, praia: { ...praia, ...resumir(daPraia) }, postos: daPraia });
+  const daPraia = postos.filter((p) => p.slug === req.params.slug).map(paraPublico);
+  const [praia] = montarPraias(catalogo, daPraia);
+  res.json({ ficticio: true, relogio, praia, postos: daPraia });
 });
 
 export default rotas;

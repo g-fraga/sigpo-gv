@@ -35,29 +35,23 @@
     document.getElementById('n-sem').textContent = d.totais.sem_atualizacao;
   }
 
-  function statusDaPraia(pr, postos) {
-    const ps = postos.filter((p) => pr.ids.includes(p.id));
-    if (ps.every((p) => !p.em_horario)) return 'fechado';
-    if (ps.some((p) => p.sem_sinal)) return 'sem_atualizacao';
-    if (ps.some((p) => p.status === 'sem_efetivo')) return 'sem_efetivo';
-    if (ps.some((p) => p.status === 'reduzido')) return 'reduzido';
-    return 'completo';
+  function textoConta(p) {
+    if (p.status === 'sem_posto') return 'sem posto';
+    if (p.status === 'sem_atualizacao' && !p.no_posto) return 'sem atualização';
+    return `${p.no_posto} de ${p.previstos}`;
   }
 
   function mostrarRegioes(d) {
-    const nomes = { N: 'Norte', L: 'Leste', S: 'Sul' };
-    document.getElementById('regioes').innerHTML = Object.entries(nomes).map(([id, nome]) => {
-      const lista = d.praias.filter((p) => p.regiao_id === id);
+    document.getElementById('regioes').innerHTML = d.regioes.map((r) => {
+      const lista = d.praias.filter((p) => p.regiao_id === r.id);
       const gv = lista.reduce((s, p) => s + p.no_posto, 0);
+      const comPosto = lista.filter((p) => p.postos > 0).length;
       return `<div class="regiao">
-        <h3>${nome} <small>${gv} guarda-vidas</small></h3>
-        <ul class="lista-praias">${lista.map((p) => {
-          const st = statusDaPraia(p, d.postos);
-          return `<li><a href="/praias/${encodeURIComponent(p.slug)}">
+        <h3>${esc(r.nome)} <small>${comPosto ? `${gv} guarda-vidas` : 'sem postos'}</small></h3>
+        <ul class="lista-praias">${lista.map((p) => `<li${p.postos ? '' : ' class="sem-posto"'}><a href="/praias/${encodeURIComponent(p.slug)}">
             <span>${esc(p.nome)}</span>
-            <span class="conta"><span class="ponto ponto-${st}" title="${esc(window.SIGPO.STATUS[st])}"></span>${st === 'sem_atualizacao' && !p.no_posto ? 'sem atualização' : `${p.no_posto} de ${p.previstos}`}</span>
-          </a></li>`;
-        }).join('')}</ul>
+            <span class="conta"><span class="ponto ponto-${p.status}" title="${esc(window.SIGPO.STATUS[p.status])}"></span>${textoConta(p)}</span>
+          </a></li>`).join('')}</ul>
       </div>`;
     }).join('');
   }
@@ -79,7 +73,7 @@
   }
 
   // Busca: aceita o nome com ou sem acento.
-  const semAcento = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const semAcento = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   document.getElementById('busca').addEventListener('submit', (ev) => {
     ev.preventDefault();
     const termo = semAcento(document.getElementById('busca-praia').value);

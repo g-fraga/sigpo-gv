@@ -20,8 +20,8 @@
       className: '',
       html: `<span class="pino pino-${p.status}"><b>${numero}</b></span>`,
       iconSize: [34, 34],
-      iconAnchor: [4, 32],
-      popupAnchor: [13, -30],
+      iconAnchor: [17, 41], // a ponta do marcador (girado 45°) fica exatamente sobre a coordenada
+      popupAnchor: [0, -36],
     });
   }
 
@@ -32,6 +32,8 @@
         <p>${selo(p.status)}</p>
         ${p.em_horario ? `<p><b>${p.presentes}</b> de ${p.previsto} guarda-vidas no posto</p>` : ''}
         <p>${esc(frasePosto(p))}</p>
+        ${p.sazonal ? '<p>Funciona só na alta temporada.</p>' : ''}
+        ${p.precisao !== 'conferida' ? '<p class="nota-mapa">Posição aproximada no mapa.</p>' : ''}
         ${link ? `<a class="botao-popup" href="/praias/${encodeURIComponent(p.slug)}#posto-${p.id}">Ver a praia</a>` : ''}`;
   }
 

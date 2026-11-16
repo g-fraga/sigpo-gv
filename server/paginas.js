@@ -11,12 +11,13 @@ const PRODUCAO = process.env.NODE_ENV === 'production';
 // Dados de cada página: título da aba, descrição, item do menu marcado e scripts.
 const PAGINAS = {
   inicio: { titulo: 'Praias de Florianópolis agora', descricao: 'Mapa dos postos de guarda-vidas, situação das praias e orientações de segurança.', menu: 'inicio', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/inicio.js'], estilos: ['/vendor/leaflet/leaflet.css'] },
-  praias: { titulo: 'Praias e postos', descricao: 'Todas as praias com posto de guarda-vidas na demonstração, por região.', menu: 'praias', scripts: ['/assets/js/praias.js'] },
+  praias: { titulo: 'Praias e postos', descricao: 'As 42 praias de Florianópolis e a Lagoa da Conceição, com os postos de guarda-vidas.', menu: 'praias', scripts: ['/assets/js/praias.js'] },
   praia: { titulo: 'Praia', descricao: 'Postos de guarda-vidas e efetivo no momento.', menu: 'praias', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/praia.js'], estilos: ['/vendor/leaflet/leaflet.css'] },
   seguranca: { titulo: 'Segurança na praia', descricao: 'Bandeiras, correntes de retorno e o que fazer em uma emergência.', menu: 'seguranca' },
   sobre: { titulo: 'Sobre o projeto', descricao: 'O que é o SIGPO-GV Web, como funciona e por que os dados são fictícios.', menu: 'sobre' },
   entrar: { titulo: 'Entrar', descricao: 'Acesso da equipe (contas de demonstração).', menu: 'entrar', scripts: ['/assets/js/entrar.js'] },
   painel: { titulo: 'Área restrita', descricao: 'Área da equipe.', menu: 'entrar', scripts: ['/assets/js/painel.js'], restrita: true },
+  posicoes: { titulo: 'Conferir posição dos postos', descricao: 'Ajuste da posição dos postos no mapa.', menu: 'entrar', scripts: ['/vendor/leaflet/leaflet.js', '/assets/js/mapa.js', '/assets/js/posicoes.js'], estilos: ['/vendor/leaflet/leaflet.css'], restrita: true },
   404: { titulo: 'Página não encontrada', descricao: 'Esta página não existe.', menu: '' },
 };
 
@@ -51,7 +52,7 @@ export async function paginaPraia(slug) {
   if (!praia) return null;
   return renderizar('praia', {
     titulo: praia.nome,
-    descricao: `Postos de guarda-vidas da praia ${praia.nome} (região ${praia.regiao}) e efetivo no momento.`,
+    descricao: `Postos de guarda-vidas em ${praia.nome} (${praia.regiao}) e efetivo no momento.`,
     variaveis: { praia: praia.nome, regiao: praia.regiao, slug },
   });
 }

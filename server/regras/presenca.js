@@ -13,7 +13,7 @@ export async function situacaoDosPostos({ regiao = null } = {}) {
   const limite = relogio.ts;
 
   const postos = await query(`
-    SELECT p.id, p.nome, p.tipo, p.latitude, p.longitude, p.previsto, p.energia,
+    SELECT p.id, p.codigo, p.nome, p.tipo, p.latitude, p.longitude, p.previsto, p.energia, p.sazonal, p.precisao, p.observacao,
            to_char(p.hora_inicio, 'HH24:MI') AS hora_inicio, to_char(p.hora_fim, 'HH24:MI') AS hora_fim,
            pr.nome AS praia, pr.slug, pr.regiao_id, r.nome AS regiao,
            t.id AS terminal_id, t.codigo AS terminal, t.online,
@@ -23,7 +23,7 @@ export async function situacaoDosPostos({ regiao = null } = {}) {
     JOIN regioes r ON r.id = pr.regiao_id
     LEFT JOIN terminais t ON t.posto_id = p.id
     WHERE p.ativo AND ($1::text IS NULL OR pr.regiao_id = $1)
-    ORDER BY pr.regiao_id, pr.nome, p.tipo DESC, p.nome`, [regiao]);
+    ORDER BY pr.ordem, p.tipo DESC, p.codigo`, [regiao]);
 
   // Versão mais recente da escala de cada posto no dia.
   const itens = await query(`
@@ -89,7 +89,7 @@ function montarPosto(p, escalados, ultimo, horaUltimoRegistro, minutos) {
   }
 
   return {
-    id: p.id, nome: p.nome, tipo: p.tipo, praia: p.praia, slug: p.slug, regiao_id: p.regiao_id, regiao: p.regiao,
+    id: p.id, codigo: p.codigo, nome: p.nome, tipo: p.tipo, sazonal: p.sazonal, precisao: p.precisao, observacao: p.observacao, praia: p.praia, slug: p.slug, regiao_id: p.regiao_id, regiao: p.regiao,
     latitude: p.latitude, longitude: p.longitude, previsto: p.previsto, energia: p.energia,
     hora_inicio: p.hora_inicio, hora_fim: p.hora_fim, terminal: p.terminal, online: p.terminal_id ? p.online : null,
     em_horario: emHorario, status, atualizado, sem_sinal: semSinal, ...contagem, pessoas,
@@ -113,7 +113,7 @@ function situacaoDaPessoa(item, postoId, reg, minutos) {
 }
 
 // Versão pública: lista do que pode sair (nunca nomes, códigos de pessoas ou pendências internas).
-const CAMPOS_PUBLICOS = ['id', 'nome', 'tipo', 'praia', 'slug', 'regiao_id', 'regiao', 'latitude', 'longitude', 'previsto',
+const CAMPOS_PUBLICOS = ['id', 'nome', 'tipo', 'sazonal', 'precisao', 'observacao', 'praia', 'slug', 'regiao_id', 'regiao', 'latitude', 'longitude', 'previsto',
   'presentes', 'hora_inicio', 'hora_fim', 'em_horario', 'status', 'atualizado', 'sem_sinal'];
 export function paraPublico(posto) {
   return Object.fromEntries(CAMPOS_PUBLICOS.map((c) => [c, posto[c]]));

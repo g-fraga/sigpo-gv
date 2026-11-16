@@ -12,6 +12,7 @@
     document.getElementById('ola').textContent = 'Olá, ' + u.nome.replace(' (fictício)', '');
     document.getElementById('perfil').textContent = `Perfil: ${nome}${u.regiao ? ', região ' + u.regiao : ''}.`;
     document.getElementById('proximas').innerHTML = itens.map((i) => `<li>${esc(i)}</li>`).join('');
+    if (u.perfil === 'admin') document.getElementById('atalhos').innerHTML = '<a class="botao" href="/painel/posicoes">Conferir a posição dos postos no mapa</a>';
   }).catch(() => { location.href = '/entrar'; });
 
   document.getElementById('sair').addEventListener('click', async () => {

@@ -5,11 +5,12 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { conectar, query, tipoBanco } from './db.js';
-import { criarDemonstracao } from './dados-demo.js';
+import { criarDemonstracao, versaoDosDados } from './dados-demo.js';
 import { hojeEmFlorianopolis, limparCache } from './relogio.js';
 import { renderizar, paginaPraia } from './paginas.js';
 import rotasPublicas from './rotas/publico.js';
 import rotasAuth, { usuarioDaSessao } from './rotas/auth.js';
+import rotasAdmin, { ajusteLigado } from './rotas/admin.js';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORTA = Number(process.env.PORT) || 3000;
@@ -46,10 +47,15 @@ async function garantirDemonstracao() {
   if (Date.now() - verificadoEm < 60_000) return;
   if (recriando) return recriando;
   recriando = (async () => {
-    let data = null;
-    try { [{ valor: data } = {}] = await query("SELECT valor FROM config WHERE chave = 'demo_data'"); } catch { /* banco vazio */ }
-    if (data !== hojeEmFlorianopolis()) {
-      console.log(data ? `Novo dia (${hojeEmFlorianopolis()}): recriando a demonstração...` : 'Banco vazio: criando a demonstração...');
+    let c = {};
+    try {
+      const linhas = await query("SELECT chave, valor FROM config WHERE chave IN ('demo_data', 'demo_versao')");
+      c = Object.fromEntries(linhas.map((l) => [l.chave, l.valor]));
+    } catch { /* banco vazio */ }
+    const hoje = hojeEmFlorianopolis();
+    if (c.demo_data !== hoje || c.demo_versao !== versaoDosDados()) {
+      const motivo = !c.demo_data ? 'banco vazio' : c.demo_data !== hoje ? `novo dia (${hoje})` : 'nova versão dos dados';
+      console.log(`Criando a demonstração (${motivo})...`);
       await criarDemonstracao();
     }
     limparCache();
@@ -73,6 +79,7 @@ app.use('/vendor/fontes/barlow-condensed', express.static(path.join(raiz, 'node_
 // API
 app.use('/api/publico', rotasPublicas);
 app.use('/api/auth', rotasAuth);
+app.use('/api/admin', rotasAdmin);
 app.get('/api/status', (req, res) => res.json({ ok: true, banco: tipoBanco() }));
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada.' }));
 
@@ -94,6 +101,12 @@ app.get('/painel', async (req, res) => {
   if (!(await usuarioDaSessao(req))) return res.redirect('/entrar');
   res.send(renderizar('painel'));
 });
+app.get('/painel/posicoes', async (req, res) => {
+  const u = await usuarioDaSessao(req);
+  if (!u) return res.redirect('/entrar');
+  if (u.perfil !== 'admin') return res.status(403).send(renderizar('404'));
+  res.send(renderizar('posicoes'));
+});
 app.use((req, res) => res.status(404).send(renderizar('404')));
 
 // Erros inesperados: registra no console e responde sem expor detalhes internos.
@@ -107,4 +120,5 @@ await conectar();
 await garantirDemonstracao();
 app.listen(PORTA, () => {
   console.log(`SIGPO-GV Web em http://localhost:${PORTA}  (banco: ${tipoBanco()})`);
+  if (ajusteLigado()) console.log('Ajuste de posições dos postos ligado: entre como admin e abra /painel/posicoes');
 });

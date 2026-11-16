@@ -34,6 +34,7 @@
     sem_efetivo: 'Sem guarda-vidas no momento',
     sem_atualizacao: 'Sem atualização',
     fechado: 'Fora do horário',
+    sem_posto: 'Sem posto cadastrado',
   };
   const selo = (status) => `<span class="selo selo-${status}">${STATUS[status]}</span>`;
 

@@ -15,17 +15,19 @@ CREATE TABLE regioes (
   nome TEXT NOT NULL
 );
 
+-- Praias e postos vêm dos arquivos server/catalogo/*.csv.
 CREATE TABLE praias (
   id SERIAL PRIMARY KEY,
   nome TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,          -- nome sem acento, usado em endereços
   regiao_id TEXT NOT NULL REFERENCES regioes(id),
-  latitude DOUBLE PRECISION NOT NULL,
-  longitude DOUBLE PRECISION NOT NULL
+  ordem INT NOT NULL,                 -- ordem da lista (norte para sul)
+  observacao TEXT
 );
 
 CREATE TABLE postos (
   id SERIAL PRIMARY KEY,
+  codigo TEXT NOT NULL UNIQUE,        -- ex.: L07
   praia_id INT NOT NULL REFERENCES praias(id),
   nome TEXT NOT NULL,
   tipo TEXT NOT NULL DEFAULT 'guarita' CHECK (tipo IN ('guarita', 'avancado')),
@@ -35,6 +37,9 @@ CREATE TABLE postos (
   hora_inicio TIME NOT NULL DEFAULT '08:00',
   hora_fim TIME NOT NULL DEFAULT '19:00',
   energia TEXT NOT NULL DEFAULT 'rede' CHECK (energia IN ('rede', 'bateria', 'solar', 'nenhuma')),
+  sazonal BOOLEAN NOT NULL DEFAULT FALSE,           -- só funciona na alta temporada
+  precisao TEXT NOT NULL DEFAULT 'aproximada' CHECK (precisao IN ('aproximada', 'conferida')),
+  observacao TEXT,
   ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
@@ -169,4 +174,13 @@ CREATE TABLE auditoria (
   objeto TEXT,
   detalhe TEXT,
   criado_em TIMESTAMP NOT NULL
+);
+
+-- Posições conferidas no mapa pela tela "Ajustar posições" (só no computador de desenvolvimento).
+-- Esta tabela NÃO é apagada quando a demonstração é recriada.
+CREATE TABLE IF NOT EXISTS posicoes_conferidas (
+  codigo TEXT PRIMARY KEY,
+  latitude DOUBLE PRECISION NOT NULL,
+  longitude DOUBLE PRECISION NOT NULL,
+  conferida_em TIMESTAMP NOT NULL DEFAULT now()
 );

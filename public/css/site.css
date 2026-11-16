@@ -290,3 +290,33 @@ input:focus-visible, select:focus-visible { outline: 3px solid var(--amarelo); o
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 .agora-claro { color: var(--tinta-2); margin: 0 0 12px; font-size: .95rem; }
+
+/* praias sem posto */
+.selo-sem_posto { color: var(--tinta-2); background: transparent; border: 1px dashed #A9B8C7; }
+.selo-sem_posto::before { display: none; }
+.ponto-sem_posto { background: transparent; border: 2px solid #A9B8C7; }
+.nota-mapa { color: var(--tinta-2); font-size: .85rem; }
+.sem-posto-caixa { max-width: 70ch; }
+.regioes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+@media (max-width: 1100px) { .regioes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .regioes { grid-template-columns: 1fr; } }
+.lista-praias .sem-posto span:first-child { font-weight: 500; color: var(--tinta-2); }
+
+/* ajuste de posições (administração) */
+.aviso-ajuste { background: var(--espuma); border-left: 6px solid var(--mar); padding: 12px 16px; margin-bottom: 20px; }
+.ajuste-grade { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: start; }
+.mapa-ajuste { height: 680px; border-radius: 10px; position: sticky; top: 16px; }
+.mapa-ajuste .pino b { font-size: .72rem; }
+.ajuste-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.ajuste-topo p { margin: 0; font-weight: 600; }
+.lista-ajuste { list-style: none; margin: 0; padding: 0; max-height: 560px; overflow: auto; border-top: 1px solid var(--linha); }
+.lista-ajuste li { padding: 12px 4px; border-bottom: 1px solid var(--linha); }
+.ajuste-nome { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; }
+.ajuste-form { display: flex; gap: 8px; }
+.ajuste-form input { font-size: .95rem; padding: 8px 10px; }
+.ajuste-form .botao { padding: 8px 14px; }
+.ajuste-msg { margin: 6px 0 0; font-size: .9rem; color: var(--tinta-2); min-height: 0; }
+.link { font: inherit; background: none; border: 0; padding: 0; color: var(--mar-2); cursor: pointer; text-align: left; }
+.link:hover { text-decoration: underline; }
+@media (max-width: 960px) { .ajuste-grade { grid-template-columns: 1fr; } .mapa-ajuste { position: static; height: 420px; } }
+.lista-praias .conta { white-space: nowrap; }
