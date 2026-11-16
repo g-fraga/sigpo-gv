@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{titulo}} | SIGPO-GV</title>
+  <meta name="description" content="{{descricao}}">
+  <meta name="theme-color" content="#0D2B4E">
+  <link rel="icon" href="/assets/img/bandeira.svg" type="image/svg+xml">
+  {{estilos}}
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script src="/assets/js/comum.js" defer></script>
+  {{scripts}}
+</head>
+<body class="{{corpo-classe}}">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <p class="aviso-prototipo">
+    Protótipo acadêmico com dados fictícios. Sem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina.
+  </p>
+
+  <header class="topo">
+    <div class="topo-interno">
+      <a class="marca" href="/" aria-label="SIGPO-GV, página inicial">
+        <svg class="marca-bandeira" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="4" y="3" width="3" height="35" rx="1.5" fill="#E8EEF4"/>
+          <path d="M7 5h28v10H7z" fill="#D7262E"/>
+          <path d="M7 15h28v10H7z" fill="#FFC530"/>
+        </svg>
+        <span class="marca-nome">SIGPO-GV<small>Praias de Florianópolis</small></span>
+      </a>
+      <button class="menu-botao" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav id="menu" class="menu" aria-label="Principal">
+        <a href="/" data-menu="inicio">Início</a>
+        <a href="/praias" data-menu="praias">Praias e postos</a>
+        <a href="/seguranca" data-menu="seguranca">Segurança</a>
+        <a href="/sobre" data-menu="sobre">Sobre</a>
+        <a class="menu-entrar" href="/entrar" data-menu="entrar">Área da equipe</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+{{conteudo}}
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape-interno">
+      <div class="rodape-emergencia">
+        <strong>193</strong>
+        <span>Emergência no mar ou na areia: ligue para os bombeiros ou avise o guarda-vidas mais próximo.</span>
+      </div>
+      <nav class="rodape-links" aria-label="Rodapé">
+        <a href="/">Início</a>
+        <a href="/praias">Praias e postos</a>
+        <a href="/seguranca">Segurança</a>
+        <a href="/entrar">Área da equipe</a>
+        <a href="/sobre">Sobre o projeto</a>
+      </nav>
+      <p class="rodape-nota">
+        SIGPO-GV Web é um trabalho da disciplina Prática de Programação Web (Análise e Desenvolvimento de Sistemas, FMP).
+        As praias existem; postos, pessoas, horários e números exibidos são fictícios e servem só para demonstrar o sistema.
+        Não use este site para decidir se é seguro entrar no mar: siga a orientação dos guarda-vidas no local.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

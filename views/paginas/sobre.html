@@ -1,0 +1,70 @@
+    <section class="cabeca-pagina">
+      <div class="interno">
+        <h1>Sobre o projeto</h1>
+        <p>O SIGPO-GV Web é um protótipo acadêmico que mostra como a presença dos guarda-vidas nos postos poderia ser registrada e acompanhada, e como parte dessa informação poderia chegar ao público.</p>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="interno texto">
+        <nav class="indice" aria-labelledby="indice-titulo">
+          <p id="indice-titulo">Nesta página</p>
+          <ol>
+            <li><a href="#ideia">A ideia</a></li>
+            <li><a href="#como">Como funciona</a></li>
+            <li><a href="#dados">Dados e privacidade</a></li>
+            <li><a href="#tecnologia">Tecnologia</a></li>
+            <li><a href="#aviso">Aviso</a></li>
+          </ol>
+        </nav>
+
+        <div class="artigo">
+          <section id="ideia">
+            <h2>A ideia</h2>
+            <p>Na temporada de verão, cada posto de guarda-vidas tem uma escala do dia. O SIGPO-GV propõe que cada guarda-vidas confirme a chegada ao posto aproximando uma pulseira com chip de um terminal instalado na guarita. A supervisão passa a ver, em um painel, quem já confirmou, quem está pendente e quais postos estão abaixo do previsto.</p>
+            <p>A mesma informação, reduzida a números, alimenta este portal: o banhista vê em quais praias há guarda-vidas no momento.</p>
+          </section>
+
+          <section id="como">
+            <h2>Como funciona</h2>
+            <ol>
+              <li>A escala do dia é publicada para cada posto.</li>
+              <li>Ao chegar, o guarda-vidas aproxima a pulseira do terminal do posto. O terminal registra o horário, mesmo sem internet, e envia quando houver sinal.</li>
+              <li>O servidor compara os registros com a escala e calcula a situação de cada posto.</li>
+              <li>O painel da supervisão mostra pendências e alertas; o portal público mostra só a contagem por posto.</li>
+            </ol>
+            <p>Uma leitura de pulseira comprova o momento em que o guarda-vidas passou pelo terminal, não que ele continua no posto. Por isso o site sempre informa de quando é o dado. O sistema é de gestão operacional, não de controle de jornada de trabalho, e uma ausência de registro nunca vira falta automaticamente: a supervisão verifica antes.</p>
+            <p>Neste protótipo não há pulseiras de verdade. A leitura é simulada pela área da equipe, que usa o mesmo caminho que um terminal real usaria.</p>
+          </section>
+
+          <section id="dados">
+            <h2>Dados e privacidade</h2>
+            <ul>
+              <li>O público vê apenas números por posto. Nomes e códigos de guarda-vidas aparecem só na área da equipe, para quem tem permissão.</li>
+              <li>As senhas são guardadas apenas como hash; o login usa sessão em cookie protegido.</li>
+              <li>Nenhum registro é apagado: correções geram um novo registro com justificativa, e as ações ficam em auditoria.</li>
+              <li>Todas as pessoas, postos, horários e números deste site são fictícios. As praias e suas posições no mapa são aproximadas.</li>
+            </ul>
+          </section>
+
+          <section id="tecnologia">
+            <h2>Tecnologia</h2>
+            <ul>
+              <li>Páginas em HTML, CSS e JavaScript, sem framework.</li>
+              <li>Servidor em Node.js com Express.</li>
+              <li>Banco de dados PostgreSQL (PGlite no computador de desenvolvimento).</li>
+              <li>Mapa com Leaflet e dados do OpenStreetMap.</li>
+            </ul>
+            <p>O código-fonte está no <a href="https://github.com/g-fraga/sigpo-gv">GitHub</a>.</p>
+          </section>
+
+          <section id="aviso">
+            <h2>Aviso</h2>
+            <div class="destaque destaque-vermelho">
+              <p>Este é um trabalho da disciplina Prática de Programação Web, do curso de Análise e Desenvolvimento de Sistemas da FMP. Não tem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina e não representa sistema, dado ou decisão da corporação.</p>
+              <p>Não use este site para decidir se é seguro entrar no mar. Siga a orientação dos guarda-vidas no local e, em emergência, ligue <a href="tel:193">193</a>.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>

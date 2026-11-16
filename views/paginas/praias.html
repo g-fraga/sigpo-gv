@@ -1,0 +1,31 @@
+    <section class="cabeca-pagina">
+      <div class="interno">
+        <h1>Praias e postos</h1>
+        <p>Praias de Florianópolis com posto de guarda-vidas nesta demonstração. Escolha uma para ver cada posto.</p>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="interno">
+        <div class="filtros">
+          <div class="campo">
+            <label for="filtro-nome">Buscar praia</label>
+            <input id="filtro-nome" type="search" placeholder="Ex.: Campeche" autocomplete="off">
+          </div>
+          <div class="abas" role="group" aria-label="Filtrar por região">
+            <button type="button" data-regiao="" aria-pressed="true">Todas</button>
+            <button type="button" data-regiao="N" aria-pressed="false">Norte</button>
+            <button type="button" data-regiao="L" aria-pressed="false">Leste</button>
+            <button type="button" data-regiao="S" aria-pressed="false">Sul</button>
+          </div>
+        </div>
+
+        <p class="agora-claro" id="agora" role="status">Carregando...</p>
+        <table class="tabela-praias">
+          <caption class="visualmente-oculto">Praias, região, número de postos e guarda-vidas no posto agora</caption>
+          <thead><tr><th scope="col">Praia</th><th scope="col">Região</th><th scope="col">Guarda-vidas no posto</th><th scope="col">Situação</th></tr></thead>
+          <tbody id="tabela"></tbody>
+        </table>
+        <p class="vazio" id="vazio" hidden>Nenhuma praia encontrada com esse nome. Confira a grafia ou escolha outra região.</p>
+      </div>
+    </section>

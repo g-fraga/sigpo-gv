@@ -1,0 +1,34 @@
+    <section class="cabeca-pagina">
+      <div class="interno">
+        <h1>Área da equipe</h1>
+        <p>Acesso de administração, supervisão e guarda-vidas. Use uma das contas de demonstração.</p>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="interno entrar-grade">
+        <form class="cartao-form" id="form-entrar" novalidate>
+          <h2>Entrar</h2>
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="username" required>
+          </div>
+          <div class="campo">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+          </div>
+          <p class="mensagem-erro" id="erro" role="alert"></p>
+          <button class="botao" type="submit">Entrar</button>
+        </form>
+
+        <div>
+          <h2>Contas de demonstração</h2>
+          <p>A senha das três é <code>demo1234</code>. Clique em uma conta para preencher o formulário.</p>
+          <ul class="contas">
+            <li><button type="button" data-email="admin@sigpo.demo"><strong>Administração</strong><span>Cadastra postos, guarda-vidas, pulseiras e escalas. Vê toda a cidade.</span><code>admin@sigpo.demo</code></button></li>
+            <li><button type="button" data-email="supervisor@sigpo.demo"><strong>Supervisão da região Leste</strong><span>Acompanha o painel, trata alertas e faz registros manuais na sua região.</span><code>supervisor@sigpo.demo</code></button></li>
+            <li><button type="button" data-email="gv0417@sigpo.demo"><strong>Guarda-vidas</strong><span>Vê a própria escala e os próprios registros, e pede revisão.</span><code>gv0417@sigpo.demo</code></button></li>
+          </ul>
+        </div>
+      </div>
+    </section>

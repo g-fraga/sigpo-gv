@@ -1,0 +1,67 @@
+    <section class="capa" aria-labelledby="titulo-capa">
+      <div class="interno capa-grade">
+        <div class="capa-texto">
+          <h1 id="titulo-capa">Vai à praia? Veja onde tem <span class="sem-quebra">guarda-vidas</span>.</h1>
+          <p>Mapa dos postos de Florianópolis com quantos guarda-vidas estão em cada um agora.</p>
+
+          <form class="busca" id="busca" role="search">
+            <label for="busca-praia">Para qual praia você vai?</label>
+            <div class="busca-linha">
+              <input id="busca-praia" type="search" list="lista-praias" placeholder="Ex.: Joaquina" autocomplete="off">
+              <datalist id="lista-praias"></datalist>
+              <button class="botao" type="submit">Ver a praia</button>
+            </div>
+            <p class="busca-erro" id="busca-erro" role="status"></p>
+          </form>
+
+          <p class="agora"><span class="pulso" aria-hidden="true"></span><span id="agora">Carregando a situação dos postos...</span></p>
+          <dl class="numeros" id="numeros" aria-live="polite">
+            <div><dt>postos em operação</dt><dd id="n-postos">–</dd></div>
+            <div><dt>guarda-vidas nos postos</dt><dd id="n-gv">–</dd></div>
+            <div><dt>postos sem atualização</dt><dd id="n-sem">–</dd></div>
+          </dl>
+        </div>
+
+        <div class="mapa-caixa">
+          <div class="mapa" id="mapa" role="region" aria-label="Mapa dos postos de guarda-vidas"></div>
+          <ul class="legenda" aria-label="Legenda do mapa">
+            <li><i style="background:var(--ok)"></i>Efetivo completo</li>
+            <li><i style="background:#C27A00"></i>Efetivo reduzido</li>
+            <li><i style="background:var(--cinza)"></i>Sem atualização ou fora do horário</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="faixa-193" aria-label="Emergência">
+      <div class="interno">
+        <strong>193</strong>
+        <p>Viu alguém com dificuldade na água? Avise o guarda-vidas mais próximo ou ligue <a href="tel:193">193</a>. Não entre no mar para tentar o resgate.</p>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="titulo-dicas">
+      <div class="interno dicas">
+        <div class="dica-do-dia">
+          <h2 id="titulo-dicas">Dica de hoje</h2>
+          <p id="dica-texto">Tome banho de mar só onde houver guarda-vidas, entre as bandeiras vermelha e amarela.</p>
+          <small id="dica-fonte">Orientação do Corpo de Bombeiros Militar do Paraná.</small>
+        </div>
+        <nav class="atalhos" aria-label="Orientações de segurança">
+          <a href="/seguranca#bandeiras"><strong>Bandeiras e placas</strong><span>Onde tomar banho e o que a bandeira vermelha avisa.</span><em>Ler</em></a>
+          <a href="/seguranca#corrente"><strong>Corrente de retorno</strong><span>Como reconhecer e como sair dela sem lutar contra o mar.</span><em>Ler</em></a>
+          <a href="/seguranca#criancas"><strong>Crianças na praia</strong><span>A distância de um braço e o que fazer se uma criança se perder.</span><em>Ler</em></a>
+          <a href="/seguranca#emergencia"><strong>Em uma emergência</strong><span>Quem chamar e por que não entrar na água para ajudar.</span><em>Ler</em></a>
+        </nav>
+      </div>
+    </section>
+
+    <section class="secao secao-espuma" aria-labelledby="titulo-regioes">
+      <div class="interno">
+        <div class="secao-cabeca">
+          <h2 id="titulo-regioes">Praias por região</h2>
+          <p>Número de guarda-vidas no posto agora, em relação ao previsto para o dia.</p>
+        </div>
+        <div class="regioes" id="regioes"><p>Carregando...</p></div>
+      </div>
+    </section>
