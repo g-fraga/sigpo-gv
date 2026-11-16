@@ -101,4 +101,22 @@ public/
 
 ## Publicação (Render)
 
-Instruções completas entram na etapa de publicação. Em resumo: um *Web Service* com `npm install` como build e `npm start` como início, as variáveis `NODE_ENV=production`, `SESSAO_SEGREDO` (texto aleatório longo) e `DATABASE_URL` (endereço de um PostgreSQL).
+O GitHub só guarda o código; quem roda o site é o Render (plano gratuito).
+
+1. Entre em [render.com](https://render.com) com a sua conta do GitHub.
+2. **New > Postgres**: nome `sigpo-gv-banco`, plano **Free**. Depois de criado, copie a **Internal Database URL**.
+3. **New > Web Service**: escolha o repositório `sigpo-gv`, na mesma região do banco.
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Instance Type: **Free**
+4. Em **Environment Variables**, adicione:
+   - `NODE_ENV` = `production`
+   - `SESSAO_SEGREDO` = clique em **Generate** (texto aleatório)
+   - `DATABASE_URL` = a Internal Database URL copiada no passo 2
+5. Clique em **Deploy**. O endereço fica parecido com `https://sigpo-gv.onrender.com`.
+
+Cuidados do plano gratuito:
+- O site "dorme" depois de 15 minutos sem visitas e leva cerca de 1 minuto para acordar. Abra o endereço uns minutos antes de apresentar.
+- O banco gratuito do Render expira 30 dias depois de criado. Para uma apresentação, crie com até 30 dias de antecedência.
+- Cada `git push` para o GitHub publica a nova versão sozinho.
+- No servidor, use PostgreSQL de verdade (`DATABASE_URL`). O PGlite usa memória demais para os 512 MB do plano gratuito.

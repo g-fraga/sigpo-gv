@@ -11,9 +11,14 @@ export async function conectar() {
   if (banco) return banco;
   if (process.env.DATABASE_URL) {
     const { default: pg } = await import('pg');
+    // Endereço interno do Render (sem ponto no nome, ex.: dpg-abc123-a) e localhost não usam SSL;
+    // endereços externos (Render, Neon etc.) usam.
+    const host = new URL(process.env.DATABASE_URL).hostname;
+    const semSSL = process.env.DATABASE_SSL === 'nao' || !host.includes('.') || host === '127.0.0.1';
     const pool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DATABASE_SSL === 'nao' ? false : { rejectUnauthorized: false },
+      ssl: semSSL ? false : { rejectUnauthorized: false },
+      max: Number(process.env.DB_CONEXOES) || 5,
     });
     banco = {
       tipo: 'PostgreSQL',
