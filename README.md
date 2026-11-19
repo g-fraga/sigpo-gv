@@ -296,4 +296,6 @@ Cuidados do plano gratuito:
 2. No GitHub, abra o repositório > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**, com o nome `RENDER_DEPLOY_HOOK` e o endereço copiado como valor.
 
 Sem esse segredo, os testes continuam rodando e a publicação automática é só pulada.
+
+Neste repositório o segredo já está configurado: cada envio para a `main` que passa nos testes é publicado sozinho em https://sigpo-gv.onrender.com.
 - No servidor, use PostgreSQL de verdade (`DATABASE_URL`). O PGlite usa memória demais para os 512 MB do plano gratuito.
