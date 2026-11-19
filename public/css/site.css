@@ -341,8 +341,8 @@ input:focus-visible, select:focus-visible { outline: 3px solid var(--amarelo); o
 
 .mensagens { position: fixed; right: 16px; bottom: 16px; z-index: 3000; display: grid; gap: 8px; max-width: min(420px, calc(100vw - 32px)); }
 .mensagem { margin: 0; padding: 12px 16px; border-radius: var(--raio); font-weight: 600; box-shadow: 0 6px 20px rgba(13,43,78,.25); }
-.mensagem-sucesso { background: var(--ok); color: var(--branco); }
-.mensagem-erro { background: var(--vermelho-escuro); color: var(--branco); }
+.mensagem.mensagem-sucesso { background: var(--ok); color: var(--branco); }
+.mensagem.mensagem-erro { background: var(--vermelho-escuro); color: var(--branco); }
 
 .estado { margin: 0; padding: 18px; border-radius: var(--raio); background: var(--branco); color: var(--tinta-2); border: 1px dashed var(--linha); }
 .estado-carregando::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 10px; vertical-align: -2px; border: 2px solid var(--linha); border-top-color: var(--mar); border-radius: 50%; animation: girar .8s linear infinite; }
