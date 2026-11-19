@@ -4,6 +4,8 @@ Portal das praias de Florianópolis com os postos de guarda-vidas e o efetivo em
 
 > **Protótipo acadêmico com dados fictícios.** Trabalho da disciplina Prática de Programação Web (Análise e Desenvolvimento de Sistemas, FMP). Não tem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina. Praias e postos seguem uma lista levantada pelo autor, com posições aproximadas no mapa; pessoas, escalas, horários e números de efetivo são inventados.
 
+https://sigpo-gv.onrender.com/
+
 ## O que já funciona
 
 - **Início**: mapa com os 42 postos, busca de praia, números da cidade, dica do dia e as 42 praias por região (Norte, Leste, Sul e Continente). Atualiza sozinho a cada minuto.
