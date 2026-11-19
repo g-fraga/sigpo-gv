@@ -37,27 +37,104 @@ Regras que valem para todos:
 
 A demonstração começa com 6 dias de histórico. A cada novo dia, o sistema **mantém cadastros e histórico** e gera o dia de hoje: escalas a partir do posto base, o cenário das 10:30 e as escalas dos próximos 3 dias. O banco só é refeito do zero quando uma nova versão do sistema é publicada ou quando a administração usa "Recriar demonstração" (Auditoria).
 
-## Como rodar no seu computador (Ubuntu)
+## Como rodar no seu computador
 
-Você precisa de **Node.js 20 ou mais novo** e do **Git**.
+Em qualquer sistema você precisa de **Node.js 20 ou mais novo** e do **Git**. Não é preciso instalar banco de dados: no computador, o sistema usa o PGlite, um PostgreSQL que roda dentro do próprio Node.
+
+Depois de instalar, os comandos para baixar e rodar o projeto são os mesmos nos três sistemas:
 
 ```bash
-# 1. Node.js pelo nvm (só na primeira vez)
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-source ~/.bashrc
-nvm install --lts
-node -v     # deve mostrar v22 ou v24
-
-# 2. Baixar o projeto
 git clone https://github.com/g-fraga/sigpo-gv.git
 cd sigpo-gv
-
-# 3. Instalar as dependências e iniciar
 npm install
 npm run dev
 ```
 
-Abra **http://localhost:3000**. Na primeira vez, o servidor cria o banco sozinho na pasta `dados/`.
+Abra **http://localhost:3000** no navegador. Na primeira vez, o servidor cria o banco sozinho na pasta `dados/`. Deixe o terminal aberto enquanto usa o site; para parar, aperte **Ctrl + C**.
+
+### Linux (Ubuntu)
+
+```bash
+# 1. Git (se ainda não tiver)
+sudo apt update
+sudo apt install -y git
+
+# 2. Node.js pelo nvm (só na primeira vez)
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+node -v     # deve mostrar v22 ou mais novo
+
+# 3. Baixar e rodar
+git clone https://github.com/g-fraga/sigpo-gv.git
+cd sigpo-gv
+npm install
+npm run dev
+```
+
+Não use `sudo apt install nodejs`: a versão do Ubuntu costuma ser antiga demais.
+
+### Windows (10 ou 11)
+
+1. Instale o **Node.js**: baixe a versão **LTS** em [nodejs.org](https://nodejs.org/) e instale com as opções padrão.
+2. Instale o **Git**: baixe em [git-scm.com](https://git-scm.com/download/win) e instale com as opções padrão.
+3. Feche e abra de novo o terminal. Use o **Prompt de Comando** (procure por `cmd` no menu Iniciar) ou o **PowerShell**.
+4. Confira as instalações e rode o projeto:
+
+```bat
+node -v
+git --version
+
+git clone https://github.com/g-fraga/sigpo-gv.git
+cd sigpo-gv
+npm install
+npm run dev
+```
+
+Se preferir instalar pelo terminal, o Windows tem o `winget`:
+
+```bat
+winget install OpenJS.NodeJS.LTS
+winget install Git.Git
+```
+
+### macOS
+
+1. Abra o **Terminal** (Aplicativos > Utilitários > Terminal).
+2. Instale o **Git**: digite `git --version`. Se ele não estiver instalado, o macOS oferece instalar as ferramentas de linha de comando; aceite e espere terminar.
+3. Instale o **Node.js** de um destes jeitos:
+   - baixando o instalador **LTS** em [nodejs.org](https://nodejs.org/); ou
+   - pelo nvm, como no Linux (no macOS o terminal usa o arquivo `~/.zshrc`):
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.zshrc
+nvm install --lts
+```
+
+4. Baixe e rode o projeto:
+
+```bash
+node -v
+git clone https://github.com/g-fraga/sigpo-gv.git
+cd sigpo-gv
+npm install
+npm run dev
+```
+
+### Sem Git
+
+Também dá para baixar sem o Git: na página do repositório no GitHub, clique em **Code > Download ZIP**, descompacte o arquivo, abra o terminal dentro da pasta descompactada (`sigpo-gv-main`) e rode `npm install` e depois `npm run dev`. O Node.js continua sendo necessário.
+
+### Problemas comuns
+
+| O que aparece | O que fazer |
+|---|---|
+| `node` ou `npm` "não é reconhecido" ou "comando não encontrado" | Feche e abra o terminal depois de instalar o Node.js. No Linux e no macOS com nvm, rode `source ~/.bashrc` (Linux) ou `source ~/.zshrc` (macOS). |
+| No PowerShell: "a execução de scripts foi desabilitada neste sistema" | Use o Prompt de Comando (`cmd`) ou rode `npm.cmd install` e `npm.cmd run dev`. |
+| `npm run dev` abre outro projeto ou diz que não acha `package.json` | O terminal não está dentro da pasta do projeto. Entre nela com `cd sigpo-gv` (ou `cd sigpo-gv-main`, se baixou o ZIP). |
+| "address already in use" ou a porta 3000 está ocupada | Rode em outra porta. Linux e macOS: `PORT=3001 npm run dev`. Prompt de Comando: `set PORT=3001 && npm run dev`. PowerShell: `$env:PORT=3001; npm run dev`. Depois abra http://localhost:3001. |
+| Quero começar a demonstração do zero | Pare o servidor (Ctrl + C) e rode `npm run reset`. |
 
 ### Contas de demonstração
 
