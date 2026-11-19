@@ -1,0 +1,36 @@
+# Roda os testes a cada envio ao GitHub. Se todos passarem na branch main e o segredo
+# RENDER_DEPLOY_HOOK estiver configurado, pede ao Render para publicar a versão nova.
+name: Testes e publicação
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  publicar:
+    needs: testes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publicar no Render
+        env:
+          GANCHO: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$GANCHO" ]; then
+            echo "Segredo RENDER_DEPLOY_HOOK não configurado: publicação automática pulada."
+            exit 0
+          fi
+          curl -fsS -X POST "$GANCHO" > /dev/null
+          echo "Publicação pedida ao Render."

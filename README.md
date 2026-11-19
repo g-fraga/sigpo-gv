@@ -4,7 +4,31 @@ Portal das praias de Florianópolis com os postos de guarda-vidas e o efetivo em
 
 > **Protótipo acadêmico com dados fictícios.** Trabalho da disciplina Prática de Programação Web (Análise e Desenvolvimento de Sistemas, FMP). Não tem vínculo oficial com o Corpo de Bombeiros Militar de Santa Catarina. Praias e postos seguem uma lista levantada pelo autor, com posições aproximadas no mapa; pessoas, escalas, horários e números de efetivo são inventados.
 
-https://sigpo-gv.onrender.com/
+**Autor:** Gustavo Fraga
+
+**Site publicado:** https://sigpo-gv.onrender.com/
+
+## Como testar em 2 minutos
+
+1. Abra **https://sigpo-gv.onrender.com/**. Na primeira visita o site pode levar cerca de 1 minuto para "acordar" (plano gratuito do Render).
+2. No site público, veja o mapa dos postos, a lista de **Praias e postos** e a página de uma praia, como a Joaquina.
+3. Clique em **Área da equipe** e entre com uma das contas abaixo. A senha das três é `demo1234`, e um clique na conta já preenche o formulário.
+
+| Conta | O que olhar |
+|---|---|
+| `admin@sigpo.demo` (Administração) | **Visão geral** da cidade, cadastros de postos, guarda-vidas, pulseiras e escalas, e a **Auditoria**. |
+| `supervisor@sigpo.demo` (Supervisão, região Leste) | **Minha região**, **Registros de presença** com as ausências do dia, **Alertas** e o **Terminal simulado**: escolha o GV 0388 (Joaquina, Posto Pinheirinho) e simule a pulseira para ver a pendência sumir. |
+| `gv0417@sigpo.demo` (Guarda-vidas) | **Início**, **Minha escala**, **Meus registros** e **Pedidos de revisão**. |
+
+Para ver a proteção de acesso, entre como supervisão e tente abrir `/painel/guarda-vidas`: a página responde "Acesso não permitido".
+
+### Telas
+
+| Site público: praias e postos | Administração: visão geral |
+|---|---|
+| ![Lista de praias e postos](docs/telas/1-praias.png) | ![Visão geral da administração](docs/telas/2-administracao.png) |
+| **Supervisão: registros de presença** | **Guarda-vidas: início** |
+| ![Registros de presença da supervisão](docs/telas/3-supervisao-registros.png) | ![Início do guarda-vidas](docs/telas/4-guarda-vidas.png) |
 
 ## O que já funciona
 
@@ -151,6 +175,21 @@ Também dá para baixar sem o Git: na página do repositório no GitHub, clique 
 | `npm run dev` | Inicia o servidor e reinicia sozinho quando você salva um arquivo. |
 | `npm start` | Inicia o servidor (modo de publicação). |
 | `npm run reset` | Apaga e recria o banco com os dados de demonstração. |
+| `npm test` | Roda os testes automáticos (veja abaixo). |
+
+### Testes automáticos
+
+`npm test` sobe o servidor com um banco novo e confere, em poucos segundos:
+
+- o site público não mostra nomes de pessoas;
+- senha errada é recusada e, sem login, as rotas internas respondem 401;
+- cada perfil é levado ao seu painel;
+- a administração vê todas as regiões, e a supervisão só a própria, mesmo pedindo outra;
+- a supervisão não acessa a administração nem faz registro em posto de outra região;
+- o registro manual exige justificativa;
+- o guarda-vidas não vê dados de outros e não pede revisão de registro de outra pessoa.
+
+Os mesmos testes rodam no GitHub a cada envio (aba **Actions**).
 
 ## Praias e postos (catálogo)
 
@@ -206,6 +245,9 @@ server/
 views/
   molde.html        cabeçalho, menu e rodapé comuns
   paginas/          conteúdo de cada página
+test/
+  permissoes.test.js  testes automáticos (npm test)
+docs/telas/         prints usados neste README
 public/
   css/site.css      estilos
   js/               scripts das páginas públicas
@@ -246,5 +288,12 @@ O repositório tem o arquivo `render.yaml` (Blueprint): ele cria o site e o banc
 Cuidados do plano gratuito:
 - O site "dorme" depois de 15 minutos sem visitas e leva cerca de 1 minuto para acordar. Abra o endereço uns minutos antes de apresentar.
 - O banco gratuito do Render expira 30 dias depois de criado. Para uma apresentação, crie com até 30 dias de antecedência.
-- Depois de um `git push`, publique com **Manual Deploy > Deploy latest commit** (ou conecte o GitHub ao Render para ficar automático).
+- Depois de um `git push`, publique com **Manual Deploy > Deploy latest commit**, ou deixe automático com o gancho de publicação (abaixo).
+
+**Publicação automática com o gancho do Render.** O arquivo `.github/workflows/testes.yml` roda os testes a cada envio para a branch `main` e, se todos passarem, pede ao Render para publicar. Para ligar:
+
+1. No Render, abra o serviço `sigpo-gv` > **Settings** > **Deploy Hook** e copie o endereço.
+2. No GitHub, abra o repositório > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**, com o nome `RENDER_DEPLOY_HOOK` e o endereço copiado como valor.
+
+Sem esse segredo, os testes continuam rodando e a publicação automática é só pulada.
 - No servidor, use PostgreSQL de verdade (`DATABASE_URL`). O PGlite usa memória demais para os 512 MB do plano gratuito.
